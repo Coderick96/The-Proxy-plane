@@ -24,7 +24,7 @@ begin
  perform 1 from auth.users where id=owner for update;
  insert into public.pp_receipts(id,user_id,sku) values(receipt,owner,sku) on conflict do nothing;
  if not found then return;end if;
- if sku='credits_10','credits_30','credits_80' then insert into public.pp_credits(user_id,reference,amount) values(owner,'purchase:'||receipt,substring(sku from 9)::integer) on conflict do nothing;
+ if sku in ('credits_10','credits_30','credits_80') then insert into public.pp_credits(user_id,reference,amount) values(owner,'purchase:'||receipt,substring(sku from 9)::integer) on conflict do nothing;
  else insert into public.pp_grants(user_id,source,feature) values(owner,receipt,case when sku='studio_pass' then 'studio' else sku end) on conflict do nothing;end if;
 end;$$;
 create or replace function public.pp_revoke_purchase(receipt text) returns void language plpgsql security definer set search_path='' as $$
@@ -33,7 +33,7 @@ declare r public.pp_receipts;begin
  if not found or r.revoked then return;end if;
  update public.pp_receipts set revoked=true where id=receipt;
  update public.pp_grants set active=false where source=receipt;
- if r.sku='credits_10','credits_30','credits_80' then insert into public.pp_credits(user_id,reference,amount) values(r.user_id,'revoke:'||receipt,-substring(r.sku from 9)::integer) on conflict do nothing;end if;
+ if r.sku in ('credits_10','credits_30','credits_80') then insert into public.pp_credits(user_id,reference,amount) values(r.user_id,'revoke:'||receipt,-substring(r.sku from 9)::integer) on conflict do nothing;end if;
 end;$$;
 create or replace function public.pp_sync_subscription(owner uuid,source_id text,enabled boolean,expires timestamptz) returns void language sql security definer set search_path='' as $$
  insert into public.pp_grants(user_id,source,feature,active,expires_at) values(owner,source_id,'premium',enabled and not exists(select 1 from public.pp_subscription_holds where source=source_id),expires) on conflict(source,feature) do update set active=excluded.active,expires_at=excluded.expires_at where public.pp_grants.user_id=excluded.user_id;

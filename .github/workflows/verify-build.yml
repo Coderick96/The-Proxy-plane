@@ -36,3 +36,10 @@ jobs:
         if: ${{ !cancelled() }}
       - run: npm run test:beta
         if: ${{ !cancelled() }}
+      - name: Smoke test the built app
+        run: |
+          SERVE_WEB=true node server/index.js &
+          trap 'kill "$!"' EXIT
+          curl --fail --silent --show-error --retry 15 --retry-connrefused --retry-delay 1 http://127.0.0.1:8787/api/health | jq -e '.ok == true'
+          curl --fail --silent --show-error http://127.0.0.1:8787/ > /tmp/proxy-plane-index.html
+          grep -q 'id="root"' /tmp/proxy-plane-index.html

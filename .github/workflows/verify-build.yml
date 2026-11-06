@@ -1,0 +1,45 @@
+name: Verify build
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run build
+      - run: node --test tests/card-backs.mjs tests/workspace-state.mjs
+      - run: npm run test:community
+        if: ${{ !cancelled() }}
+      - run: npm run test:backs
+        if: ${{ !cancelled() }}
+      - run: npm run test:premium
+        if: ${{ !cancelled() }}
+      - run: npm run test:decks
+        if: ${{ !cancelled() }}
+      - run: npm run test:evolution
+        if: ${{ !cancelled() }}
+      - run: npm run test:print
+        if: ${{ !cancelled() }}
+      - run: npm run test:ai-safety
+        if: ${{ !cancelled() }}
+      - run: npm run test:credits
+        if: ${{ !cancelled() }}
+      - run: npm run test:beta
+        if: ${{ !cancelled() }}
+      - name: Smoke test the built app
+        run: |
+          SERVE_WEB=true node server/index.js &
+          trap 'kill "$!"' EXIT
+          curl --fail --silent --show-error --retry 15 --retry-connrefused --retry-delay 1 http://127.0.0.1:8787/api/health | jq -e '.ok == true'
+          curl --fail --silent --show-error http://127.0.0.1:8787/ > /tmp/proxy-plane-index.html
+          grep -q 'id="root"' /tmp/proxy-plane-index.html

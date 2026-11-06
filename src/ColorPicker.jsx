@@ -1,0 +1,12 @@
+import React,{useState,useEffect} from 'react';
+import {hsvToHex,hexToHsv} from './colorMath.js';
+export default function ColorPicker({label='Text color',value='#ffffff',onChange}){
+ const [hsv,setHsv]=useState(()=>hexToHsv(value));const [hex,setHex]=useState(value);const [dragging,setDragging]=useState(false);
+ useEffect(()=>{setHex(value);setHsv(current=>hsvToHex(...current).toLowerCase()===value.toLowerCase()?current:hexToHsv(value));},[value]);
+ const [h,s,v]=hsv;
+ function update(next){setHsv(next);const color=hsvToHex(...next);setHex(color);onChange(color);}
+ function pick(e){const box=e.currentTarget.getBoundingClientRect();const x=(e.clientX-box.left)/box.width*2-1,y=(e.clientY-box.top)/box.height*2-1;update([(Math.atan2(y,x)*180/Math.PI+360)%360,Math.min(1,Math.hypot(x,y)),v]);}
+ return <fieldset className="color-picker"><legend>{label}</legend><div className="color-picker-row"><input aria-label={`${label} system picker`} type="color" value={/^#[0-9a-f]{6}$/i.test(value)?value:'#ffffff'} onChange={e=>onChange(e.target.value)}/><input aria-label={`${label} hex`} value={hex} placeholder="#ffffff" maxLength={7} onChange={e=>{setHex(e.target.value);if(/^#[0-9a-f]{6}$/i.test(e.target.value))onChange(e.target.value)}} onBlur={()=>setHex(value)}/></div>
+ <details><summary>Color wheel</summary><div className="color-wheel" role="slider" tabIndex={0} aria-label={`${label} hue and saturation wheel`} aria-valuemin={0} aria-valuemax={359} aria-valuenow={Math.round(h)%360} aria-valuetext={`Hue ${Math.round(h)}, saturation ${Math.round(s*100)} percent`} style={{filter:`brightness(${v})`}} onPointerDown={e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);setDragging(true);pick(e)}} onPointerMove={e=>{if(dragging)pick(e)}} onPointerUp={()=>setDragging(false)} onPointerCancel={()=>setDragging(false)} onKeyDown={e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();update(e.key==='ArrowLeft'?[h-3,s,v]:e.key==='ArrowRight'?[h+3,s,v]:e.key==='ArrowUp'?[h,Math.min(1,s+.03),v]:[h,Math.max(0,s-.03),v]);}}}><span className="color-wheel-cursor" style={{left:`${50+Math.cos(h*Math.PI/180)*s*50}%`,top:`${50+Math.sin(h*Math.PI/180)*s*50}%`}}/></div>
+ <label>Brightness<input type="range" min="0" max="100" value={Math.round(v*100)} onChange={e=>update([h,s,Number(e.target.value)/100])}/></label><p className="layer-note">Drag around the wheel for hue, toward the center for lower saturation. Use arrow keys on the wheel or enter a hex color.</p></details></fieldset>;
+}

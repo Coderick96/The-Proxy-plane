@@ -16,7 +16,7 @@ for(let n=4;n<=10;n++)await db.query('select public.pp_beta_set_seat($1,$2)',[n,
 assert.equal((await db.query('select count(*) n from public.pp_beta_seats')).rows[0].n,10);
 await as('authenticated',a);assert.equal((await db.query('select public.pp_beta_allowed() a')).rows[0].a,true);
 await denied('select * from public.pp_beta_seats');await denied('select public.pp_beta_set_seat(1,\'hack@example.test\')');await denied('select public.pp_beta_claim($1)',[outsider]);
-assert.equal((await db.query('select public.pp_my_access() a')).rows[0].a.credits,15);
+assert.equal((await db.query('select public.pp_my_access() a')).rows[0].a.credits,10);
 const card=id(100);await db.query("insert into public.proxy_kingdom_projects(id,user_id,title,project_json)values($1,$2,'Test',$3)",[card,a,JSON.stringify({id:card,name:'Test',back:{mode:'none'}})]);
 await db.query("insert into public.pk_profiles(id,username,display_name)values($1,'tester_a','Tester A')",[a]);
 await db.query("update public.proxy_kingdom_projects set visibility='public'where id=$1",[card]);
@@ -28,5 +28,5 @@ for(const role of['anon','authenticated']){await as(role,role==='authenticated'?
 await as('authenticated',outsider);await denied("insert into public.pk_profiles(id,username,display_name)values($1,'outsider','Outsider')",[outsider]);
 await as('authenticated',a);for(let n=0;n<9;n++)await db.query("insert into public.pp_beta_feedback(user_id,category,title,details)values($1,'bug','More feedback','At least ten characters here')",[a]);await denied("insert into public.pp_beta_feedback(user_id,category,title,details)values($1,'bug','Too many','At least ten characters here')",[a]);
 await as('service_role');await db.query("select public.pp_beta_set_seat(1,'replacement@example.test')");await as('authenticated',a);assert.equal((await db.query('select public.pp_beta_allowed() a')).rows[0].a,false);assert.equal((await db.query('select count(*) n from public.proxy_kingdom_projects')).rows[0].n,0);await denied('select * from public.pk_gallery()');await denied("insert into public.pp_beta_feedback(user_id,category,title,details)values($1,'bug','Revoked','Cannot submit anymore')",[a]);
-await as('service_role');assert.equal((await claim(a)).allowed,false);assert.equal((await db.query('select public.pp_access_for($1) a',[b])).rows[0].a.credits,15);
+await as('service_role');assert.equal((await claim(a)).allowed,false);assert.equal((await db.query('select public.pp_access_for($1) a',[b])).rows[0].a.credits,10);
 await db.close();console.log('Passed 10-seat cap, separate owner, verified-email claims, duplicate/outsider rejection, roster privacy, direct REST/RPC/storage beta gates, private/rate-limited feedback, revocation and service-role access.');

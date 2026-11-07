@@ -7,7 +7,7 @@ import path from 'node:path';
 import {readFile} from 'node:fs/promises';
 import {mountBeta} from './beta.js';
 import {checkAISafety} from './aiSafety.js';
-import {createServices,catalog} from './premium.js';
+import {createServices,catalog,testBillingAllowed,isTestStripeKey} from './premium.js';
 import {structuredAI,SET_SCHEMA,REVIEW_SCHEMA,validateSet} from './ai.js';
 import {mountDeckStore} from './deckStore.js';
 import {fetchDeck} from './deckImport.js';
@@ -17,20 +17,22 @@ export function createApp({env=process.env,services=createServices(env),fetcher=
  app.use(cors({origin}));
  const route=fn=>async(req,res,next)=>{try{await fn(req,res,next)}catch(e){res.status(e.status||(/Could not find.*pp_|function.*pp_.*does not exist/i.test(e.message||'')?503:500)).json({error:/Could not find.*pp_|function.*pp_.*does not exist/i.test(e.message||'')?'Premium database setup is incomplete. See PREMIUM_SETUP.md.':e.message||'Server request failed.'})}};
  app.post('/api/billing/webhook',express.raw({type:'application/json',limit:'1mb'}),route(async(req,res)=>{
+  if(!isTestStripeKey(env.STRIPE_SECRET_KEY))return res.status(403).json({error:'Only test-mode billing is available.'});
   if(!services.stripe||!env.STRIPE_WEBHOOK_SECRET)return res.status(503).json({error:'Billing webhook is not configured.'});
   let event;try{event=services.stripe.webhooks.constructEvent(req.body,req.headers['stripe-signature'],env.STRIPE_WEBHOOK_SECRET)}catch{return res.status(400).json({error:'Invalid webhook signature.'})}
+  if(event.livemode!==false)return res.status(400).json({error:'Only Stripe test-mode webhook events are accepted.'});
   await services.webhook(event);res.json({received:true});
  }));
  app.use(express.json({limit:'12mb'}));
- app.get('/api/health',(_req,res)=>res.json({ok:true,aiConfigured:Boolean(env.OPENAI_API_KEY),accountsConfigured:services.configured,billingConfigured:Boolean(services.stripe&&env.STRIPE_WEBHOOK_SECRET)}));
+ app.get('/api/health',(_req,res)=>res.json({ok:true,aiConfigured:Boolean(env.OPENAI_API_KEY),accountsConfigured:services.configured,billingConfigured:Boolean(testBillingAllowed(env)&&services.stripe&&env.STRIPE_WEBHOOK_SECRET)}));
  mountBeta(app,{env,services,route});
- const betaSalesOff=()=>env.BETA_MODE==='true'&&(env.BETA_TEST_BILLING!=='true'||!env.STRIPE_SECRET_KEY?.startsWith('sk_test_'));
- app.use(['/api/billing/checkout','/api/billing/portal'],(req,res,next)=>betaSalesOff()?res.status(403).json({error:'Purchases are disabled during the private beta.'}):next());
+ const betaSalesOff=()=>!testBillingAllowed(env);
+ app.use(['/api/billing/checkout','/api/billing/portal'],(req,res,next)=>betaSalesOff()?res.status(403).json({error:'Purchases require test-mode Stripe credentials; private beta also requires test billing opt-in.'}):next());
  const deckLimits=new Map();
  app.post('/api/decks/import',route(async(req,res)=>{const key=req.ip,now=Date.now();let limit=deckLimits.get(key);if(!limit||now-limit.start>60000){limit={start:now,count:0};if(deckLimits.size>5000)deckLimits.clear();deckLimits.set(key,limit)}if(++limit.count>10)return res.status(429).json({error:'Please wait a minute before importing another deck URL.'});if(typeof req.body?.url!=='string'||req.body.url.length>2000)return res.status(400).json({error:'Paste a supported public deck URL.'});try{res.json(await fetchDeck(req.body.url,{fetcher}))}catch(e){res.status(400).json({error:e.name==='TimeoutError'?'Deck site timed out. Try its text export instead.':e.message})}}));
 
  app.get('/api/premium/catalog',route(async(_req,res)=>{
-  const products=await Promise.all((await services.products()).map(async p=>{if(betaSalesOff()||!services.stripe||!p.price||!env.STRIPE_WEBHOOK_SECRET)return {...p,price:undefined,available:false};const price=await services.stripe.prices.retrieve(p.price);return {...p,price:undefined,available:price.active,currency:price.currency,amount:price.unit_amount,interval:price.recurring?.interval};}));res.json({products,testMode:env.STRIPE_SECRET_KEY?.includes('_test_')||false});
+  const products=await Promise.all((await services.products()).map(async p=>{if(betaSalesOff()||!services.stripe||!p.price||!env.STRIPE_WEBHOOK_SECRET)return {...p,price:undefined,available:false};const price=await services.stripe.prices.retrieve(p.price);return {...p,price:undefined,available:price.active,currency:price.currency,amount:price.unit_amount,interval:price.recurring?.interval};}));res.json({products,testMode:isTestStripeKey(env.STRIPE_SECRET_KEY)});
  }));
  app.get('/api/premium/access',route(async(req,res)=>{const u=await services.user(req);res.json(await services.access(u.id))}));
  app.get('/api/premium/assets/:pack/:design',route(async(req,res)=>{const u=await services.user(req),a=await services.access(u.id);const p=PACKS.find(p=>p.id===req.params.pack);if(!p||!p.backs.includes(req.params.design))return res.sendStatus(404);if(!ownsPack(a,p.id))return res.status(403).json({error:'This design requires its pack or Premium.'});res.set('Cache-Control','private, no-store').json({image:'data:image/svg+xml;base64,'+(await readFile(new URL(`./assets/${p.id}-${req.params.design}.svg`,import.meta.url))).toString('base64')});}));

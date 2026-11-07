@@ -74,7 +74,7 @@ begin
  perform 1 from auth.users where id=owner for update;
  insert into public.pp_receipts(id,user_id,sku) values(receipt,owner,sku) on conflict do nothing;
  if not found then return;end if;
- if sku='credits_10','credits_30','credits_80' then insert into public.pp_credits(user_id,reference,amount) values(owner,'purchase:'||receipt,substring(sku from 9)::integer) on conflict do nothing;
+ if sku in('credits_10','credits_30','credits_80') then insert into public.pp_credits(user_id,reference,amount) values(owner,'purchase:'||receipt,substring(sku from 9)::integer) on conflict do nothing;
  else insert into public.pp_grants(user_id,source,feature) values(owner,receipt,case when sku='studio_pass' then 'studio' else sku end) on conflict do nothing;end if;
 end;$$;
 drop function if exists public.pk_gallery(uuid,uuid,boolean,integer);

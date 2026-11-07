@@ -1,6 +1,9 @@
 import {createClient} from '@supabase/supabase-js';
 import Stripe from 'stripe';
 import {PACKS,FREE_ACCESS} from '../src/premiumCatalog.js';
+// This candidate is test-only even when BETA_MODE is omitted. Never construct a live client.
+export const isTestStripeKey=key=>typeof key==='string'&&/^(?:sk|rk)_test_[A-Za-z0-9]+$/.test(key);
+export const testBillingAllowed=env=>isTestStripeKey(env.STRIPE_SECRET_KEY)&&(env.BETA_MODE!=='true'||env.BETA_TEST_BILLING==='true');
 export function catalog(env){return [
  {id:'premium_monthly',name:'Premium membership',kind:'subscription',price:env.STRIPE_PRICE_PREMIUM_MONTHLY,description:'Custom backs, three AI image choices, re-sketch, member decks, Studio tools and expanded storage. 200 AI credits per paid month. Free accounts receive 10 starter credits once.'},
  {id:'studio_pass',name:'Studio Pass',kind:'payment',price:env.STRIPE_PRICE_STUDIO_PASS,description:'One-time Studio tools + the three launch packs. Free cloud limits; AI credits sold separately.'},
@@ -10,7 +13,7 @@ export function catalog(env){return [
 export function createServices(env=process.env,overrides={}){
  const configured=Boolean(env.SUPABASE_URL&&env.SUPABASE_SERVICE_ROLE_KEY);
  const admin=overrides.admin||(configured?createClient(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}}):null);
- const stripe=overrides.stripe||(env.STRIPE_SECRET_KEY?new Stripe(env.STRIPE_SECRET_KEY):null);
+ const stripe=overrides.stripe||(isTestStripeKey(env.STRIPE_SECRET_KEY)?new Stripe(env.STRIPE_SECRET_KEY):null);
  const requireAdmin=()=>{if(!admin)throw Object.assign(new Error('Server account setup is incomplete. See PREMIUM_SETUP.md.'),{status:503});return admin};
  const rpc=async(name,args)=>{const {data,error}=await requireAdmin().rpc(name,args);if(error)throw error;return data};
  async function user(req){if(req.betaUser)return req.betaUser;const token=req.headers.authorization?.match(/^Bearer (.+)$/)?.[1];if(!token)throw Object.assign(new Error('Sign in to your Cardsmith account first.'),{status:401});const {data,error}=await requireAdmin().auth.getUser(token);if(error||!data.user)throw Object.assign(new Error('Your session expired. Sign in again.'),{status:401});if(env.BETA_MODE==='true'){const admission=await rpc('pp_beta_claim',{owner:data.user.id});if(!admission?.allowed)throw Object.assign(new Error(admission?.reason||'This account is not approved for the private beta.'),{status:403});}return data.user;}
@@ -26,7 +29,7 @@ export function createServices(env=process.env,overrides={}){
   if(session.payment_intent){const intent=await stripe.paymentIntents.retrieve(session.payment_intent,{expand:['latest_charge']});const charge=intent.latest_charge;if(charge&&typeof charge!=='string'&&(charge.refunded||charge.amount_refunded>0||charge.disputed))return;}
   await rpc('pp_apply_purchase',{owner:uid,receipt:session.id,sku:product.id});
  }
- async function webhook(event){const object=event.data.object;
+ async function webhook(event){if(event?.livemode!==false)throw Object.assign(new Error('Only Stripe test-mode webhook events are accepted.'),{status:400});const object=event.data.object;
   if(['checkout.session.completed','checkout.session.async_payment_succeeded'].includes(event.type))await paidSession(object.id);
   else if(event.type.startsWith('customer.subscription.'))await subscription(object.id);
   else if(event.type==='invoice.paid'){

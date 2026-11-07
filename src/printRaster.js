@@ -3,6 +3,16 @@ import {toPng} from 'html-to-image';
 // Full card images do not need a DOM screenshot. Draw decoded pixels directly;
 // this avoids SVG foreignObject rasterization entirely for imports and backs.
 export async function rasterPrintCard(node,options,captureDOM=toPng) {
+  // An explicitly selected None backing is deliberately white, unlike a failed card capture.
+  if(node.dataset?.printBlankBack==='true'){
+    const canvas=node.ownerDocument.createElement('canvas');
+    canvas.width=Math.round(options.width*options.pixelRatio);
+    canvas.height=Math.round(options.height*options.pixelRatio);
+    const context=canvas.getContext('2d');
+    if(!context)throw new Error('The browser could not prepare blank backing pixels.');
+    context.fillStyle='#ffffff';context.fillRect(0,0,canvas.width,canvas.height);
+    const image=canvas.toDataURL('image/png');canvas.width=canvas.height=1;return image;
+  }
   const trim=node.querySelector('.sheet-card');
   const fullImage=trim?.querySelector(':scope > img, :scope > .card-back > img');
   if(!fullImage){

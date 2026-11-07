@@ -6,7 +6,7 @@ async function run(){
  const root=createRoot(document.getElementById('root'));await act(async()=>root.render(<App backend={null}/>));
  const button=text=>[...document.querySelectorAll('button')].find(b=>b.textContent===text);
  await act(async()=>button('▤Print10').click());
- assert.equal(document.querySelectorAll('.print-sheets .paper').length,2);
+ assert.equal(document.querySelectorAll('.print-sheets .paper').length,2);assert.equal(document.querySelectorAll('[data-print-blank-back]').length,0);
  const select=async(label,value)=>{const el=[...document.querySelectorAll('label')].find(l=>l.textContent.startsWith(label))?.querySelector('select');assert(el,label);await act(async()=>{el.value=value;el.dispatchEvent(new window.Event('change',{bubbles:true}))})};
  assert(!document.querySelector('.back-settings input[type=file]'));
  await select('Card backing','classic');await select('Pages to print','both');
@@ -15,6 +15,7 @@ async function run(){
  assert.equal(backs[0].querySelectorAll('.sheet-card').length,9);
  assert.equal(backs[1].querySelectorAll('.sheet-card').length,1);
  assert.equal(backs[0].querySelector('[data-slot="2"] img'),null);
+ assert.equal(backs[0].querySelector('[data-slot="2"]').dataset.printBlankBack,'true');assert.equal(document.querySelectorAll('[data-print-blank-back]').length,1);assert.equal(backs[0].querySelector('[data-slot="1"]').dataset.printBlankBack,undefined);
  assert(backs[0].querySelector('[data-slot="1"] img').src.endsWith('/proxy-plane-back.svg'));
  assert.equal(backs[1].querySelector('.sheet-card').dataset.slot,'2');
  await select('Turn the paper on','short');

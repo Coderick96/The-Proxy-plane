@@ -1,0 +1,16 @@
+.skip-link{position:fixed;left:12px;top:-100px;z-index:100;padding:14px 18px;background:#8ce9d8;color:#06201d;border-radius:8px;font-weight:700}
+.skip-link:focus{top:12px}
+:where(button,a,input,select,textarea,summary):focus-visible{outline:3px solid #75e5d3;outline-offset:4px}
+.hamburger-btn,.account-btn,.modal-close,.icon-btn{min-width:44px;min-height:44px}
+.main-nav button{min-height:44px}
+.account-modal{max-height:calc(100dvh - 40px);overflow:auto}
+.selected-face{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;margin:18px 0}
+.selected-face label{display:grid;gap:8px;min-width:180px}
+.selected-face select{min-height:44px;background:#101921;color:#e4f8f2;border:1px solid #526c70;border-radius:8px;padding:10px}
+.selected-face img{width:150px;max-width:100%;border-radius:8px}
+@media(max-width:720px){.app-shell .hamburger-btn{width:44px;height:44px}.app-shell .brand span{display:none}.app-shell .brand b{font-size:11px;letter-spacing:1px}.app-shell .brand-mark{width:32px;height:32px}.main-nav{max-height:calc(100dvh - 90px);overflow:auto}.account-modal input,.account-modal select,.searchbar input{font-size:16px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+/* A zoomed card scrolls inside its viewport rather than widening the page. */
+.studio-layout>.editor-panel,.studio-layout>.preview-panel,.interactive-preview{min-width:0;max-width:100%}
+.preview-viewport{min-width:0;max-width:100%}
+@media(max-width:720px){.app-shell .studio-layout{grid-template-columns:minmax(0,1fr)}}

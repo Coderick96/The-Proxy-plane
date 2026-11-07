@@ -19,3 +19,17 @@ window.runFallback=async()=>{
 };
 window.makePDF=()=>{const pdf=addJobToPDF(new jsPDF({unit:'in',format:[8.5,11]}),window.job);return pdf.output('datauristring');};
 window.makePrintURL=()=>URL.createObjectURL(printDocumentBlob(window.job));
+
+window.renderBlankBack=async()=>{
+ const sheet={sheet:1,side:'back',cards:[{slot:0,card:{id:'blank-back',name:'Intentional blank'},back:{mode:'none',image:''}}]};
+ window.blankBackSheet=sheet;
+ root.render(<div className="print-canvas"><div className="print-sheets print-stage"><div className="preview-page" style={{width:300}}><PrintSheet sheet={sheet} layout={layout} paperWidth={8.5} paperHeight={11} renderFront={()=>null}/></div></div></div>);
+ await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+};
+window.runBlankBack=async()=>{
+ let domCaptures=0;
+ const job=await capturePrintJob(document.querySelector('.print-sheets'),[window.blankBackSheet],settings,(node,opts)=>rasterPrintCard(node,opts,async()=>{domCaptures++;throw new Error('None backing must not use DOM capture');}));
+ const image=new Image();image.src=job.pages[0].cells[0].image;await image.decode();
+ const output=document.createElement('canvas');output.width=image.width;output.height=image.height;output.getContext('2d').drawImage(image,0,0);
+ return {width:image.width,height:image.height,center:[...output.getContext('2d').getImageData(image.width/2,image.height/2,1,1).data],domCaptures};
+};

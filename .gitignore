@@ -2,8 +2,15 @@ node_modules/
 dist/
 .env
 .env.*
-!.env.example
-!.env.beta.example
 .DS_Store
 *.log
 .vercel/
+
+# Local Python companion and verification artifacts
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+coverage/
+playwright-report/
+test-results/

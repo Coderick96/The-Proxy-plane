@@ -18,7 +18,7 @@ try{
  assert.equal(await page.locator('.sheet > img').count(),9);assert.equal(await page.locator('button').innerText(),'Print sheets');
  await page.waitForFunction(()=>[...document.images].every(img=>img.complete&&img.naturalWidth===750));
  await page.evaluate(()=>{window.print=()=>window.printCalled=true;});await page.locator('button').click();assert.equal(await page.evaluate(()=>window.printCalled),true);
- await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tests/print-browser.html`);await page.waitForFunction(()=>window.renderCustom);await page.evaluate(()=>window.renderCustom());
+ await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tests/print-browser.html`);await page.waitForFunction(()=>window.renderBlankBack);await page.evaluate(()=>window.renderBlankBack());assert.deepEqual(await page.evaluate(()=>window.runBlankBack()),{width:750,height:1050,center:[255,255,255,255],domCaptures:0});console.log('Intentional None backings render opaque white 750×1050 pixels without triggering custom-card blank fallback.');await page.evaluate(()=>window.renderCustom());
  assert.equal(await page.evaluate(()=>window.runFallback()),9);
  const customPDF=await page.evaluate(()=>window.makePDF());await writeFile('/tmp/proxy-print-qa/custom-fallback.pdf',Buffer.from(customPDF.split(',')[1],'base64'));
  // Exercise the app buttons with a queued image, without signing into an account.

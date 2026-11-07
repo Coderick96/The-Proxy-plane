@@ -8,6 +8,35 @@ create table if not exists public.pp_allowances(
  check((kind='starter' and amount=10 and subscription is null and expires_at is null)or(kind='premium' and amount=200 and subscription is not null and expires_at>period_start)),
  check(remaining between 0 and amount),unique(user_id,subscription,period_start)
 );
+-- Reconcile only recognized historical entitlement checks. No balances or grants change.
+-- Compare PostgreSQL's own canonical expressions, never constraint names or loose text.
+create temporary table pp_allowance_check_reference(
+ kind text,amount integer,remaining integer,subscription text,expires_at timestamptz,period_start timestamptz,
+ constraint known_kind check(kind in('starter','premium')),
+ constraint known_remaining check(remaining between 0 and amount),
+ constraint known_ten check((kind='starter' and amount=10 and subscription is null and expires_at is null)or(kind='premium' and amount=200 and subscription is not null and expires_at>period_start)),
+ constraint known_fifteen check((kind='starter' and amount=15 and subscription is null and expires_at is null)or(kind='premium' and amount=200 and subscription is not null and expires_at>period_start)),
+ constraint known_compatible check((kind='starter' and amount in(10,15) and subscription is null and expires_at is null)or(kind='premium' and amount=200 and subscription is not null and expires_at>period_start))
+)on commit drop;
+do $$
+declare c record;recognized text;compatible text;has_compatible boolean:=false;
+begin
+ -- Serialize setup with writes; validation and replacement share this transaction.
+ lock table public.pp_allowances in access exclusive mode;
+ select pg_get_expr(conbin,conrelid)into compatible from pg_constraint where conrelid='pg_temp.pp_allowance_check_reference'::regclass and conname='known_compatible';
+ for c in select conname,pg_get_expr(conbin,conrelid)expression from pg_constraint where conrelid='public.pp_allowances'::regclass and contype='c' loop
+  select conname into recognized from pg_constraint where conrelid='pg_temp.pp_allowance_check_reference'::regclass and pg_get_expr(conbin,conrelid)=c.expression;
+  if recognized is null then
+   raise exception 'Unrecognized pp_allowances CHECK constraint "%". Review its definition before running credits.sql; no custom constraints or balances were changed.',c.conname;
+  elsif recognized in('known_ten','known_fifteen')then
+   execute format('alter table public.pp_allowances drop constraint %I',c.conname);
+  elsif recognized='known_compatible' then has_compatible:=true;
+  end if;
+ end loop;
+ if not has_compatible then
+  execute 'alter table public.pp_allowances add constraint pp_allowances_starter_compat_check check ('||compatible||')';
+ end if;
+end;$$;
 create table if not exists public.pp_allowance_spends(
  operation uuid not null references public.pp_ai_charges(operation)on delete cascade,
  allowance uuid not null references public.pp_allowances(id)on delete cascade,

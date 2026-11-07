@@ -1,10 +1,11 @@
+import {testBillingAllowed} from './premium.js';
 const check=r=>{if(r.error)throw r.error;return r.data};
 export const betaEnabled=env=>env.BETA_MODE==='true';
 export function mountBeta(app,{env,services,route}){
  const enabled=betaEnabled(env);
  const config=async()=>{if(!enabled)return {enabled:false,capacity:10};const c=await services.rpc('pp_beta_status',{});if(!c?.enabled||!c.configured||!env.OWNER_USER_ID||c.ownerId!==env.OWNER_USER_ID)throw Object.assign(new Error('Private beta setup is incomplete. Follow BETA_SETUP.md.'),{status:503});return c};
  const owner=async req=>{const u=await services.user(req);if(!enabled||u.id!==env.OWNER_USER_ID)throw Object.assign(new Error('Only the beta owner can manage testers and feedback.'),{status:403});return u};
- app.get('/api/beta/status',route(async(req,res)=>{await config();res.set('Cache-Control','no-store');if(!enabled)return res.json({enabled:false,capacity:10});if(!req.headers.authorization)return res.json({enabled:true,capacity:10,allowed:false});try{const u=await services.user(req);res.json({enabled:true,capacity:10,allowed:true,owner:u.id===env.OWNER_USER_ID,aiEnabled:env.BETA_AI_ENABLED==='true',testBilling:env.BETA_TEST_BILLING==='true'&&Boolean(env.STRIPE_SECRET_KEY?.startsWith('sk_test_'))})}catch(e){if([401,403].includes(e.status))return res.status(e.status).json({enabled:true,allowed:false,error:e.message});throw e;}}));
+ app.get('/api/beta/status',route(async(req,res)=>{await config();res.set('Cache-Control','no-store');if(!enabled)return res.json({enabled:false,capacity:10});if(!req.headers.authorization)return res.json({enabled:true,capacity:10,allowed:false});try{const u=await services.user(req);res.json({enabled:true,capacity:10,allowed:true,owner:u.id===env.OWNER_USER_ID,aiEnabled:env.BETA_AI_ENABLED==='true',testBilling:testBillingAllowed(env)})}catch(e){if([401,403].includes(e.status))return res.status(e.status).json({enabled:true,allowed:false,error:e.message});throw e;}}));
  // Every app API is private during beta, including previously public catalogs/imports.
  // The signature-verified Stripe webhook is mounted before this middleware.
  app.use('/api',route(async(req,res,next)=>{if(enabled){await config();req.betaUser=await services.user(req);}next();}));

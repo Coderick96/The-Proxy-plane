@@ -11,6 +11,8 @@ try{
  for(const path of['/api/premium/catalog','/api/deck-products','/api/beta/roster','/api/beta/feedback'])assert.equal((await req(path)).status,401);
  assert.equal((await req('/api/decks/import','',{url:'https://example.invalid'})).status,401);
  assert.equal((await req('/api/beta/status','outsider')).status,403);assert.equal((await req('/api/premium/access','outsider')).status,403);
+ for(const [key,enabled,expected]of[['rk_test_mock','true',true],['sk_test_mock','true',true],['sk_live_mock','true',false],['rk_test_mock','false',false],['sk_test_','true',false]]){env.STRIPE_SECRET_KEY=key;env.BETA_TEST_BILLING=enabled;assert.equal((await req('/api/beta/status','tester')).body.testBilling,expected)}
+ env.STRIPE_SECRET_KEY='sk_live_mock';delete env.BETA_TEST_BILLING;
  assert.equal((await req('/api/beta/status','tester')).body.allowed,true);assert.equal((await req('/api/beta/roster','tester')).status,403);
  assert.equal((await req('/api/beta/roster','owner')).status,200);assert.equal((await req('/api/beta/roster','owner',{slot:11,email:'test@example.test'})).status,400);
  assert.equal((await req('/api/beta/roster','owner',{slot:1,email:'test@example.test'})).status,200);assert(calls.some(([name,args])=>name==='pp_beta_set_seat'&&args.address==='test@example.test'));

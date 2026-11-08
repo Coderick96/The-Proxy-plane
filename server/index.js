@@ -65,7 +65,7 @@ export function createApp({env=process.env,services=createServices(env),fetcher=
  mountDeckStore(app,{services,env,route});
  if(env.SERVE_WEB==='true'){const webRoot=fileURLToPath(new URL('../dist/',import.meta.url));app.use(express.static(webRoot,{index:false}));app.get('*',(req,res)=>{if(req.path.startsWith('/api/'))return res.status(404).json({error:'API route not found.'});res.set('Cache-Control','no-cache').sendFile(path.join(webRoot,'index.html'));});}
  app.use((error,_req,res,_next)=>res.status(400).json({error:error.type==='entity.too.large'?'Request too large.':'Invalid request.'}));
- if(services.configured){const timer=setInterval(()=>recovery.reconcile().catch(()=>{}),60000);timer.unref();app.locals.stopAIRecovery=()=>clearInterval(timer);recovery.reconcile().catch(()=>{});}
+ if(services.configured&&env.SERVERLESS_MODE!=='true'){const timer=setInterval(()=>recovery.reconcile().catch(()=>{}),60000);timer.unref();app.locals.stopAIRecovery=()=>clearInterval(timer);recovery.reconcile().catch(()=>{});}
  return app;
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){const port=Number(process.env.PORT||8787);createApp().listen(port,process.env.HOST||'127.0.0.1',()=>console.log(`The Proxy Plane server: http://127.0.0.1:${port}`));}

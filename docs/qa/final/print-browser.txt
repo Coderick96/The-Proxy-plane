@@ -1,0 +1,6 @@
+
+> the-proxy-plane@2.6.5 test:print-browser
+> node tests/run-print-browser.mjs
+
+Intentional None backings render opaque white 750×1050 pixels without triggering custom-card blank fallback.
+Browser pixels verified at 390px viewport: 9 imported cards at 750×1050, populated print document and clickable print button, custom-card fallback with 9 rendered cards. PDFs saved for rendered-page inspection.

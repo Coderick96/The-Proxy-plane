@@ -1,5 +1,6 @@
+import {uuid as createUUID} from './uuid.js';
 import React,{useState} from 'react';
-export function importedProxyCard({name,image,creator,artist,sourceUrl},uuid=()=>crypto.randomUUID()){
+export function importedProxyCard({name,image,creator,artist,sourceUrl},uuid=()=>createUUID()){
  if(!creator?.trim())throw new Error('Add the original proxy creator’s credit.');
  if(!/^data:image\/(png|jpeg|webp);base64,/.test(image||''))throw new Error('Choose PNG, JPG or WebP images.');
  let url='';if(sourceUrl?.trim()){const u=new URL(sourceUrl);if(u.protocol!=='https:'||!['proxxied.com','www.proxxied.com'].includes(u.hostname)||u.username||u.password||u.port)throw new Error('Use an HTTPS Proxxied source link.');url=u.href;}

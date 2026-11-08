@@ -1,0 +1,1 @@
+PASS shared beta billing guard: restricted/standard test keys allowed only with beta test-billing opt-in; live/public/empty keys rejected.

@@ -1,3 +1,4 @@
+import {uuid as createUUID} from './uuid.js';
 import React,{useState} from 'react';
 import {usePremium} from './PremiumContext.jsx';
 import {PACKS,ownsPack,styleFrom,applyStyle,sanitizedRestore} from './premiumCatalog.js';
@@ -5,7 +6,7 @@ import {check} from './kingdomService.js';
 export default function StudioExtras({card,onChange,templates,onTemplates,cards,onBulk,versions,onRestoreAsset}){
  const {access,assets,client,openPremium}=usePremium();const [name,setName]=useState(''),[chosen,setChosen]=useState(''),[ids,setIds]=useState([]),[notice,setNotice]=useState(''),[cloudVersions,setCloudVersions]=useState([]);
  const selected=templates.find(t=>t.id===chosen);
- async function saveTemplate(){if(!access.studio)return openPremium();if(!name.trim())return setNotice('Name your template first.');if(templates.length>=100)return setNotice('Your device template list is full. Remove a template before adding another.');const t={id:crypto.randomUUID(),name:name.trim().slice(0,80),style:styleFrom(card)};onTemplates([t,...templates].slice(0,100));setChosen(t.id);setName('');setNotice('Template saved on this device.');}
+ async function saveTemplate(){if(!access.studio)return openPremium();if(!name.trim())return setNotice('Name your template first.');if(templates.length>=100)return setNotice('Your device template list is full. Remove a template before adding another.');const t={id:createUUID(),name:name.trim().slice(0,80),style:styleFrom(card)};onTemplates([t,...templates].slice(0,100));setChosen(t.id);setName('');setNotice('Template saved on this device.');}
  async function cloudTemplate(){try{if(!selected)throw new Error('Choose a template.');const {data,error}=await client.auth.getUser();if(error||!data.user)throw new Error('Sign in to save templates to your account.');check(await client.from('pp_templates').upsert({...selected,user_id:data.user.id,updated_at:new Date().toISOString()}));setNotice('Template saved to your account.')}catch(e){setNotice(e.message)}}
  async function loadTemplates(){try{const items=check(await client.from('pp_templates').select('id,name,style').order('updated_at',{ascending:false}).limit(100));onTemplates([...new Map([...items,...templates].map(t=>[t.id,t])).values()]);setNotice('Account templates loaded.')}catch(e){setNotice(e.message)}}
  async function history(){try{const items=check(await client.from('pp_versions').select('id,project_json,created_at').eq('project_id',card.id).order('created_at',{ascending:false}).limit(20));setCloudVersions(items.map(v=>({id:v.id,card:v.project_json,date:v.created_at})));setNotice('Account history loaded.')}catch(e){setNotice(e.message)}}

@@ -1,3 +1,4 @@
+import {uuid as createUUID} from './uuid.js';
 import React,{useState} from 'react';
 import ColorPicker from './ColorPicker.jsx';
 import {LAYERS,layerSettings,isFullArt} from './cardModel.js';
@@ -13,7 +14,7 @@ export default function LayerDesigner({card,onChange,selection,onSelect}){
  const color=(field,label)=><label>{label}<input type="color" value={value[field]||'#000000'} onChange={e=>patch(field,e.target.value)}/></label>;
  const choose=(field,label,options)=><label>{label}<select value={String(value[field])} onChange={e=>patch(field,e.target.value)}>{options.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>;
  async function upload(file){if(!file)return;setError('');if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>20*1024*1024){setError('Use PNG, JPG or WebP under 20 MB.');return;}const reader=new FileReader();reader.onload=()=>updateCustom('image',reader.result);reader.onerror=()=>setError('Could not read file.');reader.readAsDataURL(file);}
- function add(){const id=crypto.randomUUID();const layer={id,kind,label:`Custom ${kind} ${(card.customLayers||[]).length+1}`,text:kind==='text'?'Your text':'',x:10,y:20,w:80,h:15,size:4,show:true};onChange({...card,customLayers:[...(card.customLayers||[]),layer],layers:{...card.layers,[id]:{panel:kind==='shape',fill:kind==='shape'?'#000000':'#eee5cb',color:isFullArt(card)?'#ffffff':'#17150f',z:4+(card.customLayers||[]).length}}});setSelected(id);}
+ function add(){const id=createUUID();const layer={id,kind,label:`Custom ${kind} ${(card.customLayers||[]).length+1}`,text:kind==='text'?'Your text':'',x:10,y:20,w:80,h:15,size:4,show:true};onChange({...card,customLayers:[...(card.customLayers||[]),layer],layers:{...card.layers,[id]:{panel:kind==='shape',fill:kind==='shape'?'#000000':'#eee5cb',color:isFullArt(card)?'#ffffff':'#17150f',z:4+(card.customLayers||[]).length}}});setSelected(id);}
  return <>
   <div className="control-grid"><label>Add a layer<select value={kind} onChange={e=>setKind(e.target.value)}><option value="text">Text / subtitle / symbols</option><option value="image">Image / frame piece / icon</option><option value="shape">Rectangle / panel / line</option></select></label><button className="secondary" onClick={add}>Add layer</button></div>
   <label>Select layer<select value={key} onChange={e=>setSelected(e.target.value)}><optgroup label="Built-in card layers">{Object.keys(LAYERS).map(k=><option key={k} value={k}>{k[0].toUpperCase()+k.slice(1)}</option>)}</optgroup><optgroup label="Your layers">{(card.customLayers||[]).map(l=><option key={l.id} value={l.id}>{l.label}</option>)}</optgroup></select></label>

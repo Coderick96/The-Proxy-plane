@@ -1,0 +1,67 @@
+
+> the-proxy-plane@2.6.5 test:community
+> node tests/run-community.mjs
+
+Passed migration repeatability, default privacy, anonymous/other-owner isolation, profile/collection/card privacy, storage reads, following feed and ownership constraint checks.
+Passed explicit guest-copy privacy, duplicate avoidance and full-vault data preservation.
+Passed Home navigation, Cardsmith labels, private collection defaults, vault organization, account gate, eligibility and fail-private publication order checks.
+Passed actual App auth-switch hydration: guest, Cardsmith A and Cardsmith B never cross-write or display each other’s local vaults.
+Passed actual backup import account switch + A/B/A generation isolation, idempotent restore/conflict rule, unique queue removal, atomic nested validation and legacy recovery (simulated DOM).
+Passed actual App backing controls, blank per-card override, paired/backs-only previews, partial sheet slots and saved backing persistence.
+Error: Card trim must be exactly 63.5 × 88.9 mm. Cards cannot be resized to fit paper.
+    at printGeometry (/workspace/proxy-plane-latest/node_modules/.cache/premium-ui-tests.cjs:84843:143)
+    at LiveSpacingPreview (/workspace/proxy-plane-latest/node_modules/.cache/premium-ui-tests.cjs:86593:40)
+    at renderWithHooks (/workspace/proxy-plane-latest/node_modules/react-dom/cjs/react-dom.development.js:15486:18)
+    at updateFunctionComponent (/workspace/proxy-plane-latest/node_modules/react-dom/cjs/react-dom.development.js:19617:20)
+    at beginWork (/workspace/proxy-plane-latest/node_modules/react-dom/cjs/react-dom.development.js:21640:16)
+    at HTMLUnknownElement.callCallback (/workspace/proxy-plane-latest/node_modules/react-dom/cjs/react-dom.development.js:4164:14)
+    at HTMLUnknownElement.callTheUserObjectsOperation (/workspace/proxy-plane-latest/node_modules/jsdom/lib/generated/idl/EventListener.js:26:30)
+    at innerInvokeEventListeners (/workspace/proxy-plane-latest/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:378:16)
+    at invokeEventListeners (/workspace/proxy-plane-latest/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:320:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/proxy-plane-latest/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:269:9)
+Error: Card trim must be exactly 63.5 × 88.9 mm. Cards cannot be resized to fit paper.
+    at printGeometry (/workspace/proxy-plane-latest/node_modules/.cache/premium-ui-tests.cjs:84843:143)
+    at LiveSpacingPreview (/workspace/proxy-plane-latest/node_modules/.cache/premium-ui-tests.cjs:86593:40)
+    at renderWithHooks (/workspace/proxy-plane-latest/node_modules/react-dom/cjs/react-dom.development.js:15486:18)
+    at updateFunctionComponent (/workspace/proxy-plane-latest/node_modules/react-dom/cjs/react-dom.development.js:19617:20)
+    at beginWork (/workspace/proxy-plane-latest/node_modules/react-dom/cjs/react-dom.development.js:21640:16)
+    at HTMLUnknownElement.callCallback (/workspace/proxy-plane-latest/node_modules/react-dom/cjs/react-dom.development.js:4164:14)
+    at HTMLUnknownElement.callTheUserObjectsOperation (/workspace/proxy-plane-latest/node_modules/jsdom/lib/generated/idl/EventListener.js:26:30)
+    at innerInvokeEventListeners (/workspace/proxy-plane-latest/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:378:16)
+    at invokeEventListeners (/workspace/proxy-plane-latest/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:320:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/proxy-plane-latest/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:269:9)
+The above error occurred in the <LiveSpacingPreview> component:
+
+    at LiveSpacingPreview (/workspace/proxy-plane-latest/node_modules/.cache/premium-ui-tests.cjs:86590:31)
+    at div
+    at details
+    at aside
+    at div
+    at PrintWorkbench (/workspace/proxy-plane-latest/node_modules/.cache/premium-ui-tests.cjs:86568:27)
+    at main
+    at div
+    at App (/workspace/proxy-plane-latest/node_modules/.cache/premium-ui-tests.cjs:86995:65)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+Error: Card trim must be exactly 63.5 × 88.9 mm. Cards cannot be resized to fit paper.
+    at printGeometry (/workspace/proxy-plane-latest/node_modules/.cache/premium-ui-tests.cjs:84843:143)
+    at LiveSpacingPreview (/workspace/proxy-plane-latest/node_modules/.cache/premium-ui-tests.cjs:86593:40)
+    at renderWithHooks (/workspace/proxy-plane-latest/node_modules/react-dom/cjs/react-dom.development.js:15486:18)
+    at updateFunctionComponent (/workspace/proxy-plane-latest/node_modules/react-dom/cjs/react-dom.development.js:19617:20)
+    at beginWork (/workspace/proxy-plane-latest/node_modules/react-dom/cjs/react-dom.development.js:21640:16)
+    at beginWork$1 (/workspace/proxy-plane-latest/node_modules/react-dom/cjs/react-dom.development.js:27465:14)
+    at performUnitOfWork (/workspace/proxy-plane-latest/node_modules/react-dom/cjs/react-dom.development.js:26599:12)
+    at workLoopSync (/workspace/proxy-plane-latest/node_modules/react-dom/cjs/react-dom.development.js:26505:5)
+    at renderRootSync (/workspace/proxy-plane-latest/node_modules/react-dom/cjs/react-dom.development.js:26473:7)
+    at recoverFromConcurrentError (/workspace/proxy-plane-latest/node_modules/react-dom/cjs/react-dom.development.js:25889:20)
+AssertionError [ERR_ASSERTION]: Pages to print
+    at select (/workspace/proxy-plane-latest/node_modules/.cache/premium-ui-tests.cjs:87818:31)
+    at run (/workspace/proxy-plane-latest/node_modules/.cache/premium-ui-tests.cjs:87860:9) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}

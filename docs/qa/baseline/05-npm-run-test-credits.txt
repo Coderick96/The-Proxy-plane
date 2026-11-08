@@ -1,0 +1,22 @@
+
+> the-proxy-plane@2.6.5 test:credits
+> node tests/credits-db.mjs && node tests/monthly-billing.mjs
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+10 !== 15
+
+    at file:///workspace/proxy-plane-baseline/tests/credits-db.mjs:10:36 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 10,
+  expected: 15,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.22.1

@@ -30,6 +30,7 @@ try{
    localStorage.setItem('pk-print-queue',JSON.stringify([{id:'qa-card',kind:'original',name:'Independent QA card',image:canvas.toDataURL('image/png')}]))
   }
  });
+ await context.addInitScript(()=>{Object.defineProperty(window.crypto,'randomUUID',{value:undefined,configurable:true});});
  const page=await context.newPage();page.setDefaultTimeout(15000);
  page.on('pageerror',e=>results.errors.push(e.message));
  const goHome=async()=>{await page.goto(origin);await page.locator('#plane-title').waitFor();};
@@ -39,7 +40,7 @@ try{
   await page.locator('.plane-showcase-card img').last().waitFor();
   await page.waitForFunction(()=>[...document.querySelectorAll('.plane-showcase-card img')].every(i=>i.complete&&i.naturalWidth>0));
   const state=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,images:[...document.querySelectorAll('.plane-showcase-card img')].every(i=>i.complete&&i.naturalWidth>0),actions:[...document.querySelectorAll('.plane-primary-actions button')].map(b=>({text:b.textContent.trim(),height:b.getBoundingClientRect().height})),motion:matchMedia('(prefers-reduced-motion: reduce)').matches}));
-  assert(state.scroll<=width+1,`horizontal overflow ${width}: ${state.scroll}`);assert(state.images,'showcase assets load');assert(state.actions.every(a=>a.height>=44),'primary targets >=44px');assert(state.motion);
+  assert(state.scroll<=width+1,`horizontal overflow ${width}: ${state.scroll}`);assert(state.images,'showcase assets load');assert(state.actions.every(a=>a.height>=44),'primary targets >=44px');assert(state.motion);assert.equal(await page.evaluate(()=>typeof crypto.randomUUID),'undefined');
   await page.screenshot({path:new URL(`home-${width}.png`,out).pathname,fullPage:true});
   results.viewports.push({...state,screenshot:`screenshots/home-${width}.png`,status:'PASS'});
   const axe=await new AxeBuilder({page}).analyze();

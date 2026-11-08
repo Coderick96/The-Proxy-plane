@@ -1,0 +1,5 @@
+
+> the-proxy-plane@2.6.5 test:backs
+> node tests/card-backs.mjs
+
+Passed backing inheritance/overrides, unsupported backing rejection, portrait/landscape edge mapping, paired partial sheets and fronts/backs-only page order.

@@ -1,3 +1,4 @@
+import {durableAIFixture} from './ai-recovery-fixture.mjs';
 import assert from 'node:assert/strict';
 import {createApp} from '../server/index.js';
 const events=[];let checks=[],generationFailure=false,seen=[],holdSafety=null;
@@ -21,6 +22,7 @@ const fetcher=async(url,options)=>{
  const value=body.text.format.name==='card_set'?{title:'Night guardians',lore:'Dark fantasy',cards:[Object.fromEntries(['name','mana','type','rules','flavor','power','toughness','color','rarity','artPrompt'].map(k=>[k,'Test']))]}:{summary:'Review',issues:[],suggestedRules:'Flying'};
  return {ok:true,json:async()=>({output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
 };
+services.rpc=durableAIFixture(services.rpc);
 const server=createApp({env,services,fetcher}).listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));const base='http://127.0.0.1:'+server.address().port;
 const req=async(path,body,token='test')=>{const r=await fetch(base+path,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});return {status:r.status,body:await r.json()}};
 const operations=[['/api/generate-art',{prompt:'Dark fantasy adult warrior, battle armor and dramatic shadows'}],['/api/ai/resketch',{prompt:'Make the haunted landscape more atmospheric',source:'data:image/png;base64,AAAA'}],['/api/ai/set',{prompt:'A gothic set with heroes rescuing children',count:1}],['/api/ai/review',{card:{name:'Night Watch',rules:'Flying'}}]];

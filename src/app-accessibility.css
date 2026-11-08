@@ -14,3 +14,5 @@
 .studio-layout>.editor-panel,.studio-layout>.preview-panel,.interactive-preview{min-width:0;max-width:100%}
 .preview-viewport{min-width:0;max-width:100%}
 @media(max-width:720px){.app-shell .studio-layout{grid-template-columns:minmax(0,1fr)}}
+
+.ai-recovery{margin-top:16px;border-top:1px solid #526c70;padding-top:12px}.ai-recovery summary{min-height:44px;cursor:pointer;display:list-item;align-content:center;font-size:13px}.ai-recovery p{font-size:12px;line-height:1.65}.ai-recovery ul{padding-left:18px}.ai-recovery li{padding:10px 0;font-size:12px;overflow-wrap:anywhere}.ai-recovery li button{display:flex;margin-top:8px;min-height:44px}

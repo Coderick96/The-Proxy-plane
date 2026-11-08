@@ -1,0 +1,1 @@
+CONFIRMED simulated historical15 starter check: reapplying current credits.sql preserves15 existing balance but new account10 starter reservation fails old CHECK. Actual deployed schema has not been inspected.

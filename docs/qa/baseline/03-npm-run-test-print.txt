@@ -1,0 +1,10 @@
+
+> the-proxy-plane@2.6.5 test:print
+> node tests/print-output.mjs
+
+Print regression checks passed: all papers/orientations/bleed, duplex slots, 300 DPI, exact PDF geometry, color document, asset failures.
+Print Studio checks passed: spacing vs bleed, front offsets, guide modes, ranges, calibration numbering/ruler/color, 1200 DPI, selected-page capture, cancellation.
+Mobile print document checks passed: complete document with user-activated print button and no waiting popup.
+True-size PDF checks passed across every supported paper/orientation: fixed 180 × 252 point cards and no-scaling preference; undersized paper cannot shrink cards.
+Direct print uses a physical-size PDF, with the same fixed card boxes as downloaded PDFs.
+Hard size guard passed: undersized/oversized jobs refused at layout, PDF and HTML boundaries; bleed preserves exact trim.

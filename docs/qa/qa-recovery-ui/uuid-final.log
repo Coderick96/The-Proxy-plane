@@ -1,0 +1,1 @@
+PASS secure UUID native path and getRandomValues v4 fallback for local-network/mobile browsers; unavailable entropy fails closed.

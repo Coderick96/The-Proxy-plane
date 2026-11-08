@@ -1,0 +1,248 @@
+
+> the-proxy-plane@2.6.5 test:browser
+> node tests/qa-mobile-print.mjs
+
+12:06:39 AM [vite] http proxy error: /api/premium/catalog
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1492:18)
+    at afterConnectMultiple (node:net:2161:7)
+{
+  "kind": "Automated Chromium browser checks, not real-device or printer verification",
+  "viewports": [
+    {
+      "width": 390,
+      "scroll": 390,
+      "images": true,
+      "actions": [
+        {
+          "text": "Search Cards",
+          "height": 48
+        },
+        {
+          "text": "Create a Card",
+          "height": 48
+        },
+        {
+          "text": "Print Proxies",
+          "height": 44
+        }
+      ],
+      "motion": true,
+      "screenshot": "screenshots/home-390.png",
+      "status": "PASS"
+    },
+    {
+      "width": 768,
+      "scroll": 768,
+      "images": true,
+      "actions": [
+        {
+          "text": "Search Cards",
+          "height": 48
+        },
+        {
+          "text": "Create a Card",
+          "height": 48
+        },
+        {
+          "text": "Print Proxies",
+          "height": 44
+        }
+      ],
+      "motion": true,
+      "screenshot": "screenshots/home-768.png",
+      "status": "PASS"
+    },
+    {
+      "width": 1440,
+      "scroll": 1440,
+      "images": true,
+      "actions": [
+        {
+          "text": "Search Cards",
+          "height": 48
+        },
+        {
+          "text": "Create a Card",
+          "height": 48
+        },
+        {
+          "text": "Print Proxies",
+          "height": 48
+        }
+      ],
+      "motion": true,
+      "screenshot": "screenshots/home-1440.png",
+      "status": "PASS"
+    }
+  ],
+  "flows": [
+    {
+      "name": "mobile menu keyboard focus, Tab cycle, Escape and return focus",
+      "status": "PASS"
+    },
+    {
+      "name": "home Search Cards → Card Library",
+      "status": "PASS",
+      "responsive": {
+        "viewport": 390,
+        "scroll": 390,
+        "offenders": []
+      },
+      "statusResponsive": "PASS"
+    },
+    {
+      "name": "home Create a Card → Custom Card Studio",
+      "status": "PASS",
+      "responsive": {
+        "viewport": 390,
+        "scroll": 390,
+        "offenders": [
+          {
+            "tag": "DIV",
+            "classes": "preview-zoom-size",
+            "text": "Upload artworkUntitled SpellCreature — Illusion✦Flying\nWhen this creat",
+            "left": 58,
+            "right": 398,
+            "width": 340,
+            "scroll": 340,
+            "client": 340
+          },
+          {
+            "tag": "DIV",
+            "classes": "pk-render pk-frame-modern pk-layout-standard ",
+            "text": "Upload artworkUntitled SpellCreature — Illusion✦Flying\nWhen this creat",
+            "left": 58,
+            "right": 398,
+            "width": 340,
+            "scroll": 340,
+            "client": 340
+          }
+        ]
+      },
+      "statusResponsive": "PASS"
+    },
+    {
+      "name": "home Print Proxies → Print Studio",
+      "status": "PASS",
+      "responsive": {
+        "viewport": 390,
+        "scroll": 390,
+        "offenders": []
+      },
+      "statusResponsive": "PASS"
+    },
+    {
+      "name": "quick access My Vault",
+      "status": "PASS"
+    },
+    {
+      "name": "quick access Gathering Plane",
+      "status": "PASS"
+    },
+    {
+      "name": "quick access Premium",
+      "status": "PASS"
+    },
+    {
+      "name": "AI quick access opens actual artwork editor category",
+      "status": "PASS"
+    },
+    {
+      "name": "PDF preparation: initial direct print",
+      "status": "PASS",
+      "type": "application/pdf",
+      "header": "%PDF-",
+      "size": 2366156
+    },
+    {
+      "name": "Direct print creates real PDF through lazy capture/export imports",
+      "status": "PASS",
+      "type": "application/pdf",
+      "header": "%PDF-",
+      "size": 2366156
+    },
+    {
+      "name": "PDF preparation: A4 paper",
+      "status": "PASS",
+      "type": "application/pdf",
+      "header": "%PDF-",
+      "size": 2366605
+    },
+    {
+      "name": "PDF preparation: custom paper",
+      "status": "PASS",
+      "type": "application/pdf",
+      "header": "%PDF-",
+      "size": 2366156
+    },
+    {
+      "name": "PDF preparation: custom width9in",
+      "status": "PASS",
+      "type": "application/pdf",
+      "header": "%PDF-",
+      "size": 2366156
+    },
+    {
+      "name": "PDF preparation: reset DPI300 after600 invalidation",
+      "status": "PASS",
+      "type": "application/pdf",
+      "header": "%PDF-",
+      "size": 2366156
+    },
+    {
+      "name": "PDF preparation: red cut guides",
+      "status": "PASS",
+      "type": "application/pdf",
+      "header": "%PDF-",
+      "size": 2366161
+    },
+    {
+      "name": "PDF preparation: duplex both with explicit None backing",
+      "status": "PASS",
+      "type": "application/pdf",
+      "header": "%PDF-",
+      "size": 4729451
+    },
+    {
+      "name": "prepared PDF invalidated after paper, custom dimensions, DPI, guide color, and duplex settings changes",
+      "status": "PASS"
+    },
+    {
+      "name": "Export PDF downloads expected filename",
+      "status": "PASS"
+    }
+  ],
+  "axe": [
+    {
+      "width": 390,
+      "violations": []
+    },
+    {
+      "width": 768,
+      "violations": []
+    },
+    {
+      "width": 1440,
+      "violations": []
+    },
+    {
+      "route": "Card Library",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "route": "Custom Card Studio",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "route": "Print Studio",
+      "width": 390,
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "phase": "duplex both with explicit None backing",
+  "summary": "PASS browser layout/navigation/export assertions; inspect recorded axe violations separately"
+}

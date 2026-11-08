@@ -1,0 +1,22 @@
+
+> the-proxy-plane@2.6.5 test:beta
+> node tests/beta-db.mjs && node tests/beta-server.mjs && node tests/run-beta-ui.mjs
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+10 !== 15
+
+    at file:///workspace/proxy-plane-baseline/tests/beta-db.mjs:19:8 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 10,
+  expected: 15,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.22.1

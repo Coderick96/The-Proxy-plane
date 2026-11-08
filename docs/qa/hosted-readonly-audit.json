@@ -1,0 +1,209 @@
+{
+  "scope": "Read-only hosted metadata; no accounts, objects, policies, credentials or balances changed.",
+  "supabase": {
+    "project": "Proxy plane",
+    "ref": "esndctzrbpoiljwenevp",
+    "tableRLS": [
+      {
+        "name": "public.proxy_kingdom_projects",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pk_profiles",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pk_collections",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pk_posts",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pk_follows",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pp_customers",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pp_grants",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pp_receipts",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pp_subscription_holds",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pp_credits",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pp_templates",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pp_versions",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pp_daily_usage",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pp_ai_charges",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pp_deck_products",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pp_deck_uploads",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pp_home_features",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pp_allowances",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pp_allowance_spends",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pp_beta_config",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pp_beta_seats",
+        "rls_enabled": true
+      },
+      {
+        "name": "public.pp_beta_feedback",
+        "rls_enabled": true
+      }
+    ],
+    "observedLegacyStarterConstraint": 15,
+    "privateBuckets": [
+      "proxy-kingdom-art",
+      "proxy-kingdom-community",
+      "proxy-plane-decks"
+    ],
+    "criticalCreditFunctionsDenyAnonAndAuthenticated": true,
+    "publicGalleryFunctionsContainBetaAssert": true,
+    "securityAdvisors": [
+      {
+        "name": "rls_enabled_no_policy",
+        "level": "INFO",
+        "count": 2,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+      },
+      {
+        "name": "anon_security_definer_function_executable",
+        "level": "WARN",
+        "count": 7,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable"
+      },
+      {
+        "name": "authenticated_security_definer_function_executable",
+        "level": "WARN",
+        "count": 10,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+      },
+      {
+        "name": "auth_leaked_password_protection",
+        "level": "WARN",
+        "count": 1,
+        "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection"
+      }
+    ],
+    "performanceAdvisors": [
+      {
+        "name": "unindexed_foreign_keys",
+        "level": "INFO",
+        "count": 15,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys"
+      },
+      {
+        "name": "auth_rls_initplan",
+        "level": "WARN",
+        "count": 2,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan"
+      },
+      {
+        "name": "unused_index",
+        "level": "INFO",
+        "count": 4,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index"
+      },
+      {
+        "name": "multiple_permissive_policies",
+        "level": "WARN",
+        "count": 4,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies"
+      }
+    ]
+  },
+  "stripe": {
+    "account": "Manafiquetcg",
+    "context": "acct_1TkUa7IdJpeICyDW",
+    "livemode": false,
+    "prices": [
+      {
+        "id": "price_1UY8qLIdJpeICyDWjptuzDJr",
+        "product": "prod_VZHPeGcsLYJf15",
+        "livemode": false,
+        "currency": "usd",
+        "unit_amount": 1499,
+        "interval": "month",
+        "interval_count": 1
+      },
+      {
+        "id": "price_1UY8qJIdJpeICyDWr4LD5bM7",
+        "product": "prod_VZHPjRPmcCEQkg",
+        "livemode": false,
+        "currency": "usd",
+        "unit_amount": 1499,
+        "interval": null,
+        "interval_count": null
+      },
+      {
+        "id": "price_1UY8qIIdJpeICyDW0xZa5VYP",
+        "product": "prod_VZHPc6fwoFzLHE",
+        "livemode": false,
+        "currency": "usd",
+        "unit_amount": 699,
+        "interval": null,
+        "interval_count": null
+      },
+      {
+        "id": "price_1UY8qGIdJpeICyDWAoJM7zyP",
+        "product": "prod_VZHPNDLpF9gfjg",
+        "livemode": false,
+        "currency": "usd",
+        "unit_amount": 299,
+        "interval": null,
+        "interval_count": null
+      }
+    ],
+    "webhookEndpointCount": 0,
+    "checkoutAndDelivery": "NOT TESTED; test catalog read only, no webhook endpoint configured."
+  },
+  "limits": [
+    "No real account signup/signin or OAuth-provider test",
+    "No hosted cross-account mutation or storage upload",
+    "No schema updates because user requires read-only",
+    "No completed Stripe test payment or webhook delivery",
+    "Native iPhone/AirPrint/physical measurements remain NOT TESTED"
+  ]
+}

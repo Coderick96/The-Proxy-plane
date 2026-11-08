@@ -1,3 +1,4 @@
+import {uuid as createUUID} from './uuid.js';
 import React,{useRef,useState} from 'react';
 import {toPng} from 'html-to-image';
 import CardRenderer from './CardRenderer.jsx';
@@ -7,7 +8,7 @@ export default function KingdomVault({cards,collections,onCollections,onCardChan
  const matching=cards.filter(c=>(filter==='all'||(filter==='unfiled'?!c.collectionId:c.collectionId===filter))&&(!search.trim()||(c.name||'').toLowerCase().includes(search.toLowerCase())));
  const shown=matching.slice(0,limit);
  async function run(id,action){setBusy(id);setError('');setNotice('');try{await action()}catch(e){setError(setupError(e))}finally{setBusy('')}}
- async function createCollection(e){e.preventDefault();const title=name.trim();if(!title)return;await run('collection',async()=>{const next=[...collections,{id:crypto.randomUUID(),name:title.slice(0,80),visibility:'private'}];if(client&&user)await saveCollections(client,user,next);onCollections(next);setName('');setNotice('Private collection created.');});}
+ async function createCollection(e){e.preventDefault();const title=name.trim();if(!title)return;await run('collection',async()=>{const next=[...collections,{id:createUUID(),name:title.slice(0,80),visibility:'private'}];if(client&&user)await saveCollections(client,user,next);onCollections(next);setName('');setNotice('Private collection created.');});}
  async function collectionVisibility(c,value){await run(c.id,async()=>{if((!client||!user)&&cards.some(card=>card.collectionId===c.id&&card.publishedAt))throw new Error('Sign in to change privacy for a collection containing published cards.');const next=collections.map(x=>x.id===c.id?{...x,visibility:value}:x);if(client&&user)await saveCollections(client,user,next);onCollections(next);setNotice(value==='private'?'Collection is private. Published cards inside it are hidden.':'Collection is public. Individual private cards stay private.');});}
  async function changeCard(card,patch){await run(card.id,async()=>{if(card.publishedAt&&(!client||!user))throw new Error('Sign in to change the privacy or collection of a published card.');if(client&&user)await updatePrivacy(client,user,{...card,...patch},collections);onCardChange(card.id,patch);setNotice(patch.visibility==='private'?'Card is private.':card.publishedAt?'Settings updated. Your last published snapshot is shown only when the card, collection and profile are public.':'Card settings updated. Use Publish to share a rendered snapshot.');});}
  async function sync(card){if(!client||!user){onSignIn();return;}await run(card.id,async()=>{await cloudProject(client,user,card,collections);setNotice('Card saved to your account. Publishing is a separate action.');});}

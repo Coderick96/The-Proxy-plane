@@ -1,0 +1,46 @@
+[
+  {
+    "command": "node tests/print-output.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node tests/card-backs.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node tests/credits-db.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node tests/premium-db.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node tests/premium-logic.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node tests/evolution-db.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node tests/beta-db.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node tests/privacy.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node tests/workspace-state.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node tests/local-art-web.mjs",
+    "exit": 0
+  },
+  {
+    "command": "node tests/monthly-billing.mjs",
+    "exit": 0
+  }
+]

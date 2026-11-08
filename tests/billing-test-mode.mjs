@@ -18,6 +18,7 @@ for(const key of ['sk_live_fixture','rk_live_fixture',undefined,'sk_test_fixture
  const calls=[];
  const env={OWNER_USER_ID:uid,STRIPE_SECRET_KEY:key,STRIPE_WEBHOOK_SECRET:secret};
  const services={configured:true,
+  rpc:async name=>{assert.equal(name,'pp_ai_reconcile');return 0},
   user:async()=>({id:uid,email:'fixture@example.test'}),access:async()=>({premium:false}),
   customer:async()=>{calls.push('customer');return 'cus_fixture'},
   products:async()=>[{id:'premium_monthly',kind:'subscription',price:'price_fixture'}],
@@ -29,7 +30,7 @@ for(const key of ['sk_live_fixture','rk_live_fixture',undefined,'sk_test_fixture
    billingPortal:{sessions:{create:async()=>{calls.push('portal');return {url:'https://billing.stripe.com/test'}}}}
   }
  };
- const server=createApp({env,services}).listen(0,'127.0.0.1');
+ const app=createApp({env,services});const server=app.listen(0,'127.0.0.1');
  await new Promise(resolve=>server.once('listening',resolve));
  const base='http://127.0.0.1:'+server.address().port;
  const req=async(path,body)=>{
@@ -54,7 +55,7 @@ for(const key of ['sk_live_fixture','rk_live_fixture',undefined,'sk_test_fixture
   assert.equal(calls.length,before,'Rejected webhook must not reach fulfillment');
   assert.equal((await webhook({id:'evt_test',type:'checkout.session.completed',livemode:false,data:{object:{id:'cs_test'}}})).status,allowed?200:403);
   if(!allowed)assert.deepEqual(calls,[],'Live/missing keys must not perform Stripe or fulfillment operations');
- }finally{await new Promise(resolve=>server.close(resolve))}
+ }finally{app.locals.stopAIRecovery?.();await new Promise(resolve=>server.close(resolve))}
 }
 const direct=createServices({}, {stripe:{},admin:{}});
 await assert.rejects(()=>direct.webhook({livemode:true}),/Only Stripe test-mode/);

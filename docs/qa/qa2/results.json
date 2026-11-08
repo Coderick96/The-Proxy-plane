@@ -1,0 +1,27 @@
+[
+  {
+    "command": "node tests/credits-db.mjs",
+    "exit": 0,
+    "log": "credits-db.log"
+  },
+  {
+    "command": "node tests/privacy.mjs",
+    "exit": 0,
+    "log": "privacy.log"
+  },
+  {
+    "command": "node tests/premium-db.mjs",
+    "exit": 0,
+    "log": "premium-db.log"
+  },
+  {
+    "command": "node tests/beta-db.mjs",
+    "exit": 0,
+    "log": "beta-db.log"
+  },
+  {
+    "command": "node tests/monthly-billing.mjs",
+    "exit": 0,
+    "log": "monthly-billing.log"
+  }
+]

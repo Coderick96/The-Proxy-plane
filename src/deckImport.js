@@ -1,3 +1,4 @@
+import {uuid as createUUID} from './uuid.js';
 export const BOARDS=['main','commander','sideboard','maybeboard','tokens'];
 export const MAX_DECK_COPIES=1000;
 const boardName=value=>{const s=value.toLowerCase().replace(/[\[\]:]/g,'').trim();return /^(commander|commanders|companion|companions)$/.test(s)?'commander':/^(sideboard|side board)$/.test(s)?'sideboard':/^(maybeboard|maybe board|considering|considerations)$/.test(s)?'maybeboard':/^tokens?$/.test(s)?'tokens':/^(main|mainboard|main deck|maindeck|deck)$/.test(s)?'main':null};
@@ -38,7 +39,7 @@ export async function resolveDeck(entries,{fetcher=fetch,signal,onProgress=()=>{
  }
  return entries.map(e=>({...e,card:matchDeckCard(e,cards)||null}));
 }
-export function deckQueueItems(rows,boards=['main','commander'],uuid=()=>crypto.randomUUID()){
+export function deckQueueItems(rows,boards=['main','commander'],uuid=()=>createUUID()){
  const selected=rows.filter(r=>boards.includes(r.board)&&r.selected!==false&&r.card);
  if(selected.some(r=>!Number.isInteger(r.count)||r.count<1||r.count>1000))throw new Error('Use whole-number quantities from 1 to 1,000.');
  const total=selected.reduce((n,r)=>n+r.count,0);if(total>MAX_DECK_COPIES)throw new Error('Import at most 1,000 copies at a time. Reduce quantities or selected sections.');

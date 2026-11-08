@@ -1,5 +1,5 @@
 import {spawnSync} from 'node:child_process';
-const names=['card-backs','deck-import','print-output','ai-safety','credits-db','monthly-billing','premium-db','premium-server','premium-logic','evolution-db','deck-store-server','beta-db','beta-server','privacy','workspace-state','local-art-web','billing-test-mode','run-ui'];
+const names=['uuid','card-backs','deck-import','print-output','ai-safety','credits-db','credits-compat','ai-recovery-db','monthly-billing','premium-db','premium-server','premium-logic','evolution-db','deck-store-server','beta-db','beta-server','privacy','workspace-state','local-art-web','billing-test-mode','run-ui'];
 const failures=[];
 for(const name of names){
  console.log(`\n=== ${name} ===`);

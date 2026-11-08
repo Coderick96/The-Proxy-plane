@@ -1,4 +1,6 @@
-# The Proxy Plane 2.6.1 — 10-person private beta
+> Current repair candidate: authoritative **2.6.5 Local Art** source. See [verification, known blockers, and local run instructions](docs/qa/RELEASE-REVIEW.md). This branch is not deployed or approved for release. [Try the local test build](TESTING.md).
+
+# The Proxy Plane 2.6.5 — private-beta test candidate
 
 For the beta setup, start with **BETA_SETUP.md** and **BETA_TEST_CHECKLIST.md**.
 Windows launcher: START_PRIVATE_BETA.bat. Beta adds verified-email approval,

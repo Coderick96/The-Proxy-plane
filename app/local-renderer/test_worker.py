@@ -7,6 +7,9 @@ import subprocess
 import tempfile
 import time
 import unittest
+import sys
+import weakref
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
@@ -31,6 +34,35 @@ def ticket(**overrides):
     return body+'.'+signature
 
 class WorkerTests(unittest.TestCase):
+    def test_cached_gpu_memory_is_reusable(self):
+        gb = 1024**3
+        fake = SimpleNamespace(cuda=SimpleNamespace(is_available=lambda:True,
+            mem_get_info=lambda:(4*gb,16*gb),memory_reserved=lambda:8*gb,get_device_name=lambda index:'test GPU'))
+        with patch.dict(sys.modules, {'torch':fake}):
+            hw=worker.hardware()
+            self.assertEqual(hw['memoryGB'],12)
+            self.assertEqual(choose_profile(hw['device'],hw['memoryGB'])['model'],'sdxl')
+
+    def test_oom_traceback_released_before_fallback(self):
+        claims=worker.verify_ticket(ticket(job='00000000-0000-4000-a000-000000000003'))
+        job=claims['job']
+        class Allocation: pass
+        seen=[]
+        def render(claims,profile,device,index,source):
+            if not seen:
+                allocation=Allocation()
+                seen.append(weakref.ref(allocation))
+                raise RuntimeError('CUDA out of memory')
+            self.assertIsNone(seen[0](),'The failed frame must not retain its allocation during fallback')
+            self.assertEqual(device,'cpu')
+            return 'data:image/png;base64,AAAA'
+        worker.jobs[job]=dict(status='running',completed=0)
+        self.assertTrue(worker.lock.acquire(blocking=False))
+        with patch.object(worker,'hardware',return_value={'device':'cuda','memoryGB':12}),patch.object(worker,'render_one',side_effect=render):
+            worker.run_job(claims,None)
+        self.assertEqual(worker.jobs[job]['status'],'complete')
+        self.assertEqual(len(worker.jobs[job]['images']),3)
+
     def test_profiles(self):
         self.assertEqual(choose_profile('cuda', 12)['model'], 'sdxl')
         self.assertTrue(choose_profile('cuda', 7)['offload'])

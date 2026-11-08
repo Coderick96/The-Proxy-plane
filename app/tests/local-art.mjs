@@ -23,6 +23,10 @@ async function request(value=body,token='valid'){
  return {status:response.status,data:await response.json()};
 }
 try{
+ const currentAccess=services.access;
+ services.access=async()=>{throw Object.assign(new Error('Credit schema is outdated'),{status:503});};
+ assert.equal((await request()).status,503);assert.equal(spends,0);
+ services.access=currentAccess;
  assert.equal((await request(body,'bad')).status,401);
  assert.equal((await request({...body,prompt:'bad'})).status,400);assert.equal(spends,0);
  assert.equal((await request({...body,source:'data:image/png;base64,AAAA'})).status,403);assert.equal(spends,0);
@@ -47,5 +51,14 @@ try{for(const path of ['/api/generate-art','/api/ai/resketch']){
 }console.log('Passed default-mode paid image endpoint blocking.');}finally{await new Promise(resolve=>guarded.close(resolve));}
 
 await import('./local-art-client.mjs');
+const betaServices={...services,rpc:async(name,args)=>name==='pp_beta_status'?{enabled:true,configured:true,ownerId:'owner'}:services.rpc(name,args)};
+const beta=createApp({env:{BETA_MODE:'true',BETA_AI_ENABLED:'true',OWNER_USER_ID:'owner'},services:betaServices}).listen(0,'127.0.0.1');
+await new Promise(resolve=>beta.once('listening',resolve));
+try{
+ const url='http://127.0.0.1:'+beta.address().port+'/api/local-art/config';
+ assert.equal((await fetch(url)).status,401);
+ assert.equal((await fetch(url,{headers:{Authorization:'Bearer valid'}})).status,200);
+ console.log('Passed actual private-beta config authentication and outdated-credit-schema denial.');
+}finally{await new Promise(resolve=>beta.close(resolve));}
 if(process.argv.includes('--browser'))await import('./local-art-browser.cjs');
 if(process.argv.includes('--legacy'))await import('./ai-safety.mjs');

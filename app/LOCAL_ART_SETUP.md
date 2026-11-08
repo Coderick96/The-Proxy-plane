@@ -100,7 +100,9 @@ check on actual supported browsers before release. No browser security feature i
 
 ## Hardware and quality
 
-Profiles use **available** GPU/unified memory, not the device's advertised capacity.
+Profiles use available GPU/unified memory plus this renderer's reusable GPU allocations,
+not just the device's advertised capacity. This avoids downgrading a subsequent batch
+because the renderer itself has cached model weights.
 Only one image is rendered at a time. Dimensions below are portrait; landscape swaps them
 and square uses the shorter edge.
 

@@ -54,11 +54,14 @@ def verify_ticket(ticket):
         body, signature = ticket.split('.')
         PUBLIC_KEY.verify(base64.urlsafe_b64decode(signature + '=' * (-len(signature) % 4)), body.encode())
         claims = json.loads(base64.urlsafe_b64decode(body + '=' * (-len(body) % 4)))
-        assert claims['v'] == 1 and claims['aud'] == 'proxy-plane-local-art'
-        assert claims['choices'] == 3 and time.time() < claims['exp']
-        assert re.fullmatch(r'[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}', claims['job'])
-        assert isinstance(claims['prompt'], str) and 5 <= len(claims['prompt']) <= 4000
-        assert claims['size'] in ['1024x1024', '1024x1536', '1536x1024']
+        valid = (claims['v'] == 1 and claims['aud'] == 'proxy-plane-local-art'
+                 and claims['choices'] == 3 and time.time() < claims['exp']
+                 and isinstance(claims['job'], str)
+                 and re.fullmatch(r'[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}', claims['job'])
+                 and isinstance(claims['prompt'], str) and 5 <= len(claims['prompt']) <= 4000
+                 and claims['size'] in ['1024x1024', '1024x1536', '1536x1024'])
+        if not valid:
+            raise ValueError('Invalid claims')
         return claims
     except Exception:
         raise HTTPException(401, 'Invalid or expired artwork authorization. Retry in Proxy Plane.')
@@ -67,10 +70,13 @@ def hardware():
     import torch
     ram = psutil.virtual_memory().available / 1024**3
     if torch.cuda.is_available():
-        free, _ = torch.cuda.mem_get_info()
-        return dict(device='cuda', memoryGB=free / 1024**3, name=torch.cuda.get_device_name(0))
+        free, total = torch.cuda.mem_get_info()
+        # Cached model allocations belong to this renderer and can be reused/released.
+        available = min(total, free + torch.cuda.memory_reserved())
+        return dict(device='cuda', memoryGB=available / 1024**3, freeMemoryGB=free / 1024**3, name=torch.cuda.get_device_name(0))
     if torch.backends.mps.is_available():
-        return dict(device='mps', memoryGB=ram, name='Apple Metal')
+        reusable = torch.mps.driver_allocated_memory() / 1024**3
+        return dict(device='mps', memoryGB=ram+reusable, freeMemoryGB=ram, name='Apple Metal')
     return dict(device='cpu', memoryGB=ram, name='CPU (slow; minutes per image)')
 
 @app.get('/health')
@@ -179,12 +185,15 @@ def run_job(claims, source):
             if path.exists():
                 images.append(json.loads(path.read_text()))
             else:
+                retry_on_cpu = False
                 try:
                     image = render_one(claims, profile, hw['device'], i, source)
                 except RuntimeError as error:
                     if 'out of memory' not in str(error).lower():
                         raise
-                    # Reload a smaller model on CPU to free GPU memory and finish the batch.
+                    retry_on_cpu = True
+                # Exit the except block first so the traceback releases the failed pipeline.
+                if retry_on_cpu:
                     profile = fallback_profile()
                     hw['device'] = 'cpu'
                     image = render_one(claims, profile, 'cpu', i, source)

@@ -28,7 +28,8 @@ export function mountLocalArt(app,{env,services,route}){
   const {requestId,prompt,size='1024x1536',source}=req.body||{};
   if(!uuid.test(requestId||'')||typeof prompt!=='string'||prompt.trim().length<5||prompt.length>4000||!['1024x1024','1024x1536','1536x1024'].includes(size))throw fail('Use a 5–4,000 character prompt and a supported size.');
   if(source!==undefined&&(typeof source!=='string'||source.length>10*1024*1024||!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(source)))throw fail('Invalid reference image.');
-  if(source&&!(await services.access(user.id)).studio)throw fail('Re-sketch requires Premium or Studio Pass.',403);
+  const access=await services.access(user.id); // Enforce the existing current-credit-schema guard for every authorization.
+  if(source&&!access.studio)throw fail('Re-sketch requires Premium or Studio Pass.',403);
   const key=signingKey(); // Validate configuration before touching credits.
   const sourceHash=source?createHash('sha256').update(source).digest('hex'):null;
   const operation=artOperation(user.id,requestId,prompt,size,sourceHash);

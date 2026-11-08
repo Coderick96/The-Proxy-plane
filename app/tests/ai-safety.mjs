@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import {createApp} from '../server/index.js';
 const events=[];let checks=[],generationFailure=false,seen=[],holdSafety=null;
 const safeResult=decision=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify({decision})}]}]});
-const env={OPENAI_API_KEY:'test-only',OPENAI_SAFETY_MODEL:'gpt-4.1-mini'};
+// These tests exercise the explicitly enabled legacy cloud mode with mocked providers.
+const env={LOCAL_ART_ENABLED:'false',OPENAI_API_KEY:'test-only',OPENAI_SAFETY_MODEL:'gpt-4.1-mini'};
 const services={configured:false,user:async req=>{if(req.headers.authorization!=='Bearer test')throw Object.assign(new Error('Sign in'),{status:401});return {id:'test-owner'}},access:async()=>({studio:true}),rpc:async(name,args)=>{events.push([name,args])},products:async()=>[],deckProducts:async()=>[]};
 const fetcher=async(url,options)=>{
  const body=options.body instanceof FormData?null:JSON.parse(options.body);seen.push([url,body]);

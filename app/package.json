@@ -19,7 +19,11 @@
     "test:credits": "node tests/credits-db.mjs && node tests/monthly-billing.mjs",
     "serve": "node server/index.js",
     "beta:setup": "node scripts/beta-setup.mjs",
-    "test:beta": "node tests/beta-db.mjs && node tests/beta-server.mjs && node tests/run-beta-ui.mjs"
+    "test:beta": "node tests/beta-db.mjs && node tests/beta-server.mjs && node tests/run-beta-ui.mjs",
+    "local-art:keys": "node scripts/art-keys.mjs",
+    "local-art:setup": "node scripts/local-renderer.mjs --setup",
+    "local-art:start": "node --env-file-if-exists=.env scripts/local-renderer.mjs",
+    "test:local-art": "node tests/local-art.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",

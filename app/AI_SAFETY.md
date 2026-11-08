@@ -1,4 +1,14 @@
-# AI safety in 2.5.7
+# AI safety
+
+## Local artwork mode
+
+The default local artwork integration uses on-device image screening and does not call
+the paid cloud classifier described below. It does not provide equivalent prompt/reference
+moderation or guarantee detection of prohibited content. Signed tickets protect credit
+authorization, not the behavior of user-modified software. See
+[LOCAL_ART_SETUP.md](LOCAL_ART_SETUP.md) for screening, billing and release limitations.
+
+## Legacy cloud AI safety in 2.5.7
 
 This release builds directly on 2.5.6. It does not include the paused store
 compliance changes, native wrappers, new moderation workflow or new legal pages.

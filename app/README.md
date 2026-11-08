@@ -1,3 +1,9 @@
+# Local image generation integration
+
+This editable source now defaults to local artwork generation. Start with
+[LOCAL_ART_SETUP.md](LOCAL_ART_SETUP.md) for the server signing key, user companion,
+hardware profiles and testing limits. The original ZIP remains unchanged in the repository.
+
 # The Proxy Plane 2.6.1 — 10-person private beta
 
 For the beta setup, start with **BETA_SETUP.md** and **BETA_TEST_CHECKLIST.md**.

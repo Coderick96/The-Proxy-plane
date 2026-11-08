@@ -6,6 +6,7 @@ import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {readFile} from 'node:fs/promises';
 import {mountBeta} from './beta.js';
+import {mountLocalArt} from './localArt.js';
 import {checkAISafety} from './aiSafety.js';
 import {createServices,catalog} from './premium.js';
 import {structuredAI,SET_SCHEMA,REVIEW_SCHEMA,validateSet} from './ai.js';
@@ -24,6 +25,8 @@ export function createApp({env=process.env,services=createServices(env),fetcher=
  app.use(express.json({limit:'12mb'}));
  app.get('/api/health',(_req,res)=>res.json({ok:true,aiConfigured:Boolean(env.OPENAI_API_KEY),accountsConfigured:services.configured,billingConfigured:Boolean(services.stripe&&env.STRIPE_WEBHOOK_SECRET)}));
  mountBeta(app,{env,services,route});
+ mountLocalArt(app,{env,services,route});
+ app.use(['/api/generate-art','/api/ai/resketch'],(_req,res,next)=>env.LOCAL_ART_ENABLED!=='false'?res.status(409).json({error:'Artwork uses the local renderer. Authorize it through /api/local-art/authorize.'}):next());
  const betaSalesOff=()=>env.BETA_MODE==='true'&&(env.BETA_TEST_BILLING!=='true'||!env.STRIPE_SECRET_KEY?.startsWith('sk_test_'));
  app.use(['/api/billing/checkout','/api/billing/portal'],(req,res,next)=>betaSalesOff()?res.status(403).json({error:'Purchases are disabled during the private beta.'}):next());
  const deckLimits=new Map();

@@ -7,3 +7,7 @@ dist/
 .DS_Store
 *.log
 .vercel/
+.local-art-keys/
+.venv/
+__pycache__/
+*.pyc

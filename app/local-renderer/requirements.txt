@@ -1,0 +1,10 @@
+# Install the appropriate PyTorch wheel for your GPU first; see LOCAL_ART_SETUP.md.
+diffusers==0.35.1
+transformers==4.56.2
+accelerate==1.10.1
+safetensors==0.6.2
+fastapi==0.116.1
+uvicorn==0.35.0
+cryptography==45.0.7
+Pillow==11.3.0
+psutil==7.0.0

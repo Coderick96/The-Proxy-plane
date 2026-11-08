@@ -1,0 +1,54 @@
+{
+  "sourceVersion": "2.6.5",
+  "featureBranch": "feature/local-art-audit-homepage",
+  "pullRequest": "https://github.com/Coderick96/The-Proxy-plane/pull/2",
+  "checks": [
+    {
+      "command": "npm test",
+      "exit": 0,
+      "status": "PASS",
+      "groups": 21,
+      "UIFixtures": 14,
+      "log": "npm-test.txt"
+    },
+    {
+      "command": "npm run build",
+      "exit": 0,
+      "status": "PASS",
+      "log": "build.txt",
+      "limitation": "Main bundle still exceeds500kB warning threshold"
+    },
+    {
+      "command": "npm audit --json --cache /tmp/proxy-plane-npm-cache",
+      "exit": 0,
+      "status": "PASS",
+      "knownAdvisories": 0,
+      "log": "npm-audit.json"
+    },
+    {
+      "command": "PRINT_BROWSER_EXECUTABLE=/usr/bin/chromium npm run test:browser",
+      "exit": 0,
+      "status": "PASS",
+      "flows": 18,
+      "viewports": [
+        390,
+        768,
+        1440
+      ],
+      "axeRuns": 6,
+      "pageErrors": 0,
+      "compatibility": "native randomUUID disabled; secure random-byte fallback exercised",
+      "log": "browser.txt"
+    },
+    {
+      "command": "PRINT_BROWSER_EXECUTABLE=/usr/bin/chromium npm run test:print-browser",
+      "exit": 0,
+      "status": "PASS",
+      "log": "print-browser.txt",
+      "limitation": "Software pixels/PDF checks, not measured printer output"
+    }
+  ],
+  "hostedDatabase": "Read-only per user; metadata inspected; no migrations or test-data writes",
+  "stripe": "Approved test account catalog inspected; no webhook endpoint; no payments made",
+  "launchRecommendation": "BLOCKED for cloud launch; local core-workflow candidate ready to test"
+}

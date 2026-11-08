@@ -1,0 +1,18 @@
+
+> the-proxy-plane@2.6.5 test:ui
+> node tests/run-ui.mjs
+
+Passed Home navigation, Cardsmith labels, private collection defaults, vault organization, account gate, eligibility and fail-private publication order checks.
+Passed actual App auth-switch hydration: guest, Cardsmith A and Cardsmith B never cross-write or display each other’s local vaults.
+Passed actual backup import account switch + A/B/A generation isolation, idempotent restore/conflict rule, unique queue removal, atomic nested validation and legacy recovery (simulated DOM).
+Passed actual App backing controls, blank per-card override, paired/backs-only previews, partial sheet slots and saved backing persistence.
+Passed actual paid App templates/batch styles, private version restore, owned backing selection, generated set saving and bleed/alignment profile persistence (simulated DOM).
+Passed actual free App list/URL import, commander/sideboard defaults, unmatched exclusion, exact copy counts, queue append and account-scoped deck draft persistence (simulated DOM).
+Passed real staple welcome images, Gathering Plane naming, three-image selection, reference re-sketch, removed premium frames and attributed private proxy imports (simulated DOM).
+Passed beta sign-in wall, 10-slot owner roster, private tester feedback form and missing-config closure (simulated DOM).
+Queue UI passed: preview removal updates fronts, paired backs, and empty queue.
+Spacing preview regression passed: empty/populated queues at no bleed, 1/16 and 1/8 inch bleed; trim remains 2.5 × 3.5 inches.
+PASS homepage: actual navigation callbacks, account states, credit terms, recent-card editing, disclaimer and offline artwork fallback (simulated DOM).
+PASS: library reverse-face preview, queue and editable import; result-grid actions do not inherit another selected face.
+PASS actual App auth recovery: pending/rejected email sign-in and signup, successful retries, Google/Apple rejection, failed-signout identity/workspace retention and successful signout isolation (simulated DOM/providers).
+PASS AI recovery UI: metadata-first retrieval, no new charge, auth/A-B-A isolation, private result application, generated operation IDs and recoverable errors (simulated DOM/providers).

@@ -1,0 +1,1 @@
+PASS fresh and historical 15-credit schema compatibility: repeat setup, unchanged used legacy balances and paid wallet, new 10-credit spend, unknown custom CHECK rejected atomically.

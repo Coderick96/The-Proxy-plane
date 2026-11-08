@@ -1,0 +1,1 @@
+Passed monthly grant owner/price/paid-status/cycle/interval checks; zero-payment, canceled, annual, proration and unrelated invoice rejection (mock Stripe).

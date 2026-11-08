@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proxy Plane | Art Studio</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#11151e;color:#eef2fa;font:16px system-ui,sans-serif}main{max-width:1080px;margin:auto;padding:clamp(18px,5vw,65px)}h1{font-size:clamp(36px,7vw,70px);margin:.15em 0}.brand{color:#97e0cb;letter-spacing:.18em;font-size:.8rem;font-weight:bold}p{color:#bbc6da}form,figure{background:#1b2331;border:1px solid #384255;border-radius:14px;padding:18px;margin:0}label{display:block;margin-bottom:8px}textarea,select,button,a{font:inherit}textarea,select{color:inherit;background:#11151e;border:1px solid #596780;border-radius:8px;padding:10px}textarea{width:100%;min-height:100px}button,a{display:inline-block;padding:9px 13px;border:1px solid transparent;border-radius:8px;background:#97e0cb;color:#12241f;font-weight:650;text-decoration:none;cursor:pointer}button:disabled{opacity:.55;cursor:wait}.controls,figcaption,#downloads{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}.controls label{margin:0}#downloads[hidden]{display:none}#choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:14px}img{width:100%;display:block;border-radius:8px}figure:has([aria-pressed=true]){outline:2px solid #97e0cb}#status{min-height:1.5em}
+</style>
+<main>
+<div class="brand">PROXY PLANE</div>
+<h1>Art Studio</h1>
+<p>Describe a scene. Generate three versions on this device and choose the art for your card.</p>
+<form>
+<label for="prompt">Art prompt</label>
+<textarea id="prompt" required maxlength="400" placeholder="A silver-armored knight crossing a moonlit marsh, drifting blue lanterns, detailed oil painting"></textarea>
+<div class="controls">
+<label for="layout">Framing</label>
+<select id="layout"><option value="portrait">Full-card portrait</option><option value="landscape">Art window landscape</option></select>
+<button id="generate">Generate 3 images</button>
+</div>
+</form>
+<p id="status" role="status"></p>
+<section id="choices" aria-label="Generated candidates"></section>
+<section id="downloads" aria-label="Selected artwork" hidden></section>
+</main>
+<script>
+const form = document.querySelector('form');
+const promptField = document.querySelector('#prompt');
+const layoutField = document.querySelector('#layout');
+const generate = document.querySelector('#generate');
+const statusLine = document.querySelector('#status');
+const choices = document.querySelector('#choices');
+const downloads = document.querySelector('#downloads');
+let urls = [];
+const options = new URLSearchParams(location.search);
+let parentOrigin;
+try {
+  const origin = new URL(options.get('parentOrigin'));
+  if (['http:', 'https:'].includes(origin.protocol)) parentOrigin = origin.origin;
+} catch {}
+
+const host = window.opener || (parent !== window ? parent : null);
+if (parentOrigin && host) {
+  host.postMessage({type:'proxy-plane:art-ready'}, parentOrigin);
+}
+
+function png(encoded) {
+  return new Blob([Uint8Array.from(atob(encoded), char => char.charCodeAt(0))], {type:'image/png'});
+}
+
+function addCandidate(data, layout) {
+  const card = png(data.card);
+  const original = png(data.original);
+  const cardUrl = URL.createObjectURL(card);
+  const originalUrl = URL.createObjectURL(original);
+  urls.push(cardUrl, originalUrl);
+  const number = choices.children.length + 1;
+  const figure = document.createElement('figure');
+  const image = new Image();
+  image.src = cardUrl;
+  image.alt = 'Generated candidate ' + number;
+  const caption = document.createElement('figcaption');
+  const pick = document.createElement('button');
+  pick.disabled = true;
+  pick.textContent = 'Choose image ' + number;
+  pick.setAttribute('aria-pressed', 'false');
+  pick.onclick = () => {
+    for (const button of choices.querySelectorAll('button')) button.setAttribute('aria-pressed', 'false');
+    pick.setAttribute('aria-pressed', 'true');
+    downloads.replaceChildren();
+    for (const [label, url, suffix] of [['Download card crop', cardUrl, 'card'], ['Download original', originalUrl, 'original']]) {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'proxy-plane-' + data.seed + '-' + suffix + '.png';
+      link.textContent = label;
+      downloads.append(link);
+    }
+    downloads.hidden = false;
+    if (parentOrigin && host) {
+      host.postMessage({type:'proxy-plane:art-selected', seed:data.seed, layout, card, original}, parentOrigin);
+    }
+  };
+  caption.append(pick);
+  figure.append(image, caption);
+  choices.append(figure);
+  statusLine.textContent = 'Rendered ' + number + ' of 3.';
+}
+
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+  if (!promptField.value.trim()) {
+    statusLine.textContent = 'Enter an art prompt.';
+    return;
+  }
+  for (const url of urls) URL.revokeObjectURL(url);
+  urls = [];
+  choices.replaceChildren();
+  downloads.replaceChildren();
+  downloads.hidden = true;
+  generate.disabled = true;
+  statusLine.textContent = 'Loading the local model and rendering. First launch downloads model weights.';
+  const layout = layoutField.value;
+  try {
+    const response = await fetch('/generate', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt:promptField.value, layout})
+    });
+    if (!response.ok) throw new Error((await response.json()).error);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let pending = '';
+    let complete = false;
+    try {
+      while (true) {
+        const {value, done} = await reader.read();
+        if (done) break;
+        pending += decoder.decode(value, {stream:true});
+        const lines = pending.split('\n');
+        pending = lines.pop();
+        for (const line of lines) {
+          const data = JSON.parse(line);
+          if (data.error) throw new Error(data.error);
+          if (data.done) complete = true;
+          else addCandidate(data, layout);
+        }
+      }
+    } finally {
+      await reader.cancel();
+    }
+    if (!complete || choices.children.length !== 3) throw new Error('The render ended early. Try again.');
+    for (const pick of choices.querySelectorAll('button')) pick.disabled = false;
+    statusLine.textContent = 'All three images are ready. Choose your favorite.';
+  } catch (error) {
+    statusLine.textContent = error.message || 'Unable to generate images.';
+  } finally {
+    generate.disabled = false;
+  }
+});
+</script>
+</html>
+

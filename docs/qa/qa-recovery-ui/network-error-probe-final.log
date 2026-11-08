@@ -1,0 +1,3 @@
+PASS independent network rejection: generated operation ID retained; caller body unchanged.
+PASS independent non-JSON 503: generated operation ID and status retained.
+PASS independent session exception: generated operation ID retained.

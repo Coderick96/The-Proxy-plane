@@ -1,0 +1,72 @@
+{
+  "baseline": "1707c3f",
+  "notes": "Default sandbox refused localhost binds for deck/AI HTTP checks. Those attempts are BLOCKED, not evidence of an assertion failure. Local-art source unchanged between baseline and fixture test run.",
+  "checks": [
+    {
+      "command": "npm run build",
+      "exit": 0,
+      "status": "PASS",
+      "log": "00-npm-run-build.txt"
+    },
+    {
+      "command": "npm run test:backs",
+      "exit": 0,
+      "status": "PASS",
+      "log": "01-npm-run-test-backs.txt"
+    },
+    {
+      "command": "npm run test:decks",
+      "exit": 1,
+      "status": "BLOCKED",
+      "log": "02-npm-run-test-decks.txt"
+    },
+    {
+      "command": "npm run test:print",
+      "exit": 0,
+      "status": "PASS",
+      "log": "03-npm-run-test-print.txt"
+    },
+    {
+      "command": "npm run test:ai-safety",
+      "exit": 1,
+      "status": "BLOCKED",
+      "log": "04-npm-run-test-ai-safety.txt"
+    },
+    {
+      "command": "npm run test:credits",
+      "exit": 1,
+      "status": "FAIL",
+      "log": "05-npm-run-test-credits.txt"
+    },
+    {
+      "command": "npm run test:premium",
+      "exit": 1,
+      "status": "FAIL",
+      "log": "06-npm-run-test-premium.txt"
+    },
+    {
+      "command": "npm run test:evolution",
+      "exit": 1,
+      "status": "FAIL",
+      "log": "07-npm-run-test-evolution.txt"
+    },
+    {
+      "command": "npm run test:beta",
+      "exit": 1,
+      "status": "FAIL",
+      "log": "08-npm-run-test-beta.txt"
+    },
+    {
+      "command": "npm run test:community",
+      "exit": 1,
+      "status": "FAIL",
+      "log": "09-npm-run-test-community.txt"
+    },
+    {
+      "command": "node tests/local-art-web.mjs",
+      "exit": 0,
+      "status": "PASS",
+      "log": "10-local-art-web.txt"
+    }
+  ]
+}

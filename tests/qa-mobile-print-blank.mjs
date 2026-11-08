@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {rasterPrintCard} from '../src/printRaster.js';
+let recorded;
+const canvas={width:0,height:0,getContext(){return{set fillStyle(value){assert.equal(value,'#ffffff');},fillRect(x,y,w,h){assert.deepEqual([x,y,w,h],[0,0,750,1050]);}};},toDataURL(type){assert.equal(type,'image/png');recorded={width:this.width,height:this.height};return'data:image/png;base64,fixture';}};
+const node={dataset:{printBlankBack:'true'},ownerDocument:{createElement(tag){assert.equal(tag,'canvas');return canvas;}}};
+const png=await rasterPrintCard(node,{width:250,height:350,pixelRatio:3},async()=>assert.fail('Intentional blank backs must not enter DOM capture'));
+assert.equal(png,'data:image/png;base64,fixture');assert.deepEqual(recorded,{width:750,height:1050});assert.equal(canvas.width,1);assert.equal(canvas.height,1);
+const missingNode={dataset:{},querySelector(){return null;}};
+await assert.rejects(rasterPrintCard(missingNode,{width:250,height:350,pixelRatio:3},async()=>{throw new Error('capture still required');}),/capture still required/);
+console.log('Independent blank-back unit check passed: explicit None marker renders white at full raster dimensions; unmarked missing custom content still requires capture. Canvas is simulated, not actual PNG pixels.');

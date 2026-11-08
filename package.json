@@ -1,0 +1,52 @@
+{
+  "name": "the-proxy-plane",
+  "version": "2.6.5",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "server": "node server/index.js",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test:community": "node tests/run-community.mjs",
+    "test:backs": "node tests/card-backs.mjs",
+    "start": "node scripts/start.mjs",
+    "test:premium": "node tests/premium-db.mjs && node tests/premium-server.mjs && node tests/premium-logic.mjs",
+    "test:decks": "node tests/deck-import.mjs",
+    "test:evolution": "node tests/evolution-db.mjs && node tests/deck-store-server.mjs",
+    "test:print": "node tests/print-output.mjs",
+    "test:ai-safety": "node tests/ai-safety.mjs",
+    "test:credits": "node tests/credits-db.mjs && node tests/monthly-billing.mjs",
+    "serve": "node server/index.js",
+    "beta:setup": "node scripts/beta-setup.mjs",
+    "test:beta": "node tests/beta-db.mjs && node tests/beta-server.mjs && node tests/run-beta-ui.mjs",
+    "test": "node tests/run-all.mjs",
+    "test:ui": "node tests/run-ui.mjs",
+    "test:local-art": "node tests/local-art-web.mjs",
+    "test:billing-safety": "node tests/billing-test-mode.mjs",
+    "test:browser": "node tests/qa-mobile-print.mjs",
+    "test:print-browser": "node tests/run-print-browser.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "html-to-image": "^1.11.13",
+    "html2canvas": "1.4.1",
+    "jspdf": "4.2.1",
+    "lucide-react": "^0.468.0",
+    "mana-font": "1.18.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "stripe": "23.1.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@electric-sql/pglite": "0.5.13",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "30.1.3",
+    "playwright": "1.65.0",
+    "vite": "^6.0.5"
+  }
+}

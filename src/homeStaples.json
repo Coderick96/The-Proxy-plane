@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Sol Ring",
+    "image": "/home-staples/sol-ring.jpg",
+    "artist": "Hector Ortiz",
+    "url": "https://scryfall.com/card/trc/499/sol-ring?utm_source=api",
+    "set": "trc",
+    "collector": "499"
+  },
+  {
+    "name": "Command Tower",
+    "image": "/home-staples/command-tower.jpg",
+    "artist": "Arthur Yuan",
+    "url": "https://scryfall.com/card/trc/521/command-tower?utm_source=api",
+    "set": "trc",
+    "collector": "521"
+  },
+  {
+    "name": "Arcane Signet",
+    "image": "/home-staples/arcane-signet.jpg",
+    "artist": "Tom\u00e1\u0161 Honz",
+    "url": "https://scryfall.com/card/trc/485/arcane-signet?utm_source=api",
+    "set": "trc",
+    "collector": "485"
+  }
+]

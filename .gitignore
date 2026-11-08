@@ -1,0 +1,19 @@
+node_modules/
+dist/
+.env
+.env.*
+.DS_Store
+*.log
+.vercel/
+
+# Local Python companion and verification artifacts
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+coverage/
+playwright-report/
+test-results/
+
+# Requested, sanitized verification evidence
+!docs/qa/**/*.log

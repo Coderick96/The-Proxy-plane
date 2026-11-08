@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="750" height="1050" viewBox="0 0 750 1050">
+<defs>
+ <radialGradient id="leather"><stop stop-color="#88cdb4"/><stop offset=".58" stop-color="#13312e"/><stop offset="1" stop-color="#13312e"/></radialGradient>
+ <radialGradient id="portal"><stop stop-color="#88cdb4"/><stop offset=".5" stop-color="#13312e"/><stop offset="1" stop-color="#171b28"/></radialGradient>
+ <linearGradient id="gold" x2="1" y2="1"><stop stop-color="#fae3ab"/><stop offset=".4" stop-color="#88cdb4"/><stop offset=".65" stop-color="#f2cf87"/><stop offset="1" stop-color="#74512d"/></linearGradient>
+ <pattern id="grain" width="23" height="31" patternUnits="userSpaceOnUse"><path d="M2 4l5 2m8 9l-3 3M3 25l4-2m12 5l1-4" fill="none" stroke="#ead3a4" stroke-opacity=".07" stroke-width="2"/></pattern>
+</defs>
+<rect width="750" height="1050" fill="#101217"/>
+<rect x="27" y="27" width="696" height="996" rx="28" fill="url(#leather)" stroke="url(#gold)" stroke-width="5"/>
+<rect x="41" y="41" width="668" height="968" rx="19" fill="url(#grain)" stroke="#171318" stroke-width="7"/>
+<path d="M74 180V91h89M587 91h89v89M74 870v89h89M587 959h89v-89" fill="none" stroke="url(#gold)" stroke-width="3"/>
+<ellipse cx="375" cy="536" rx="278" ry="366" fill="#211b20" stroke="#100f15" stroke-width="17"/>
+<ellipse cx="375" cy="536" rx="265" ry="353" fill="url(#portal)" stroke="url(#gold)" stroke-width="6"/>
+<ellipse cx="375" cy="536" rx="246" ry="334" fill="none" stroke="#ae9266" stroke-opacity=".5" stroke-width="2"/>
+<g fill="none" stroke="url(#gold)">
+ <circle cx="375" cy="542" r="166" stroke-width="2" opacity=".6"/>
+ <circle cx="375" cy="542" r="145" stroke-width="1" opacity=".35"/>
+ <path d="M375 365L540 650H210ZM375 719L210 434H540Z" stroke-width="2" opacity=".6"/>
+ <path d="M375 464L444 542 375 620 306 542Z" stroke-width="7"/>
+ <path d="M375 489L420 542 375 595 330 542Z" stroke-width="2"/>
+</g>
+<path d="M350 415L430 440 405 480 455 515 400 590 375 650 330 585 285 555 340 520 310 475Z" fill="#88cdb4" fill-opacity=".4" stroke="#88cdb4" stroke-width="4"/><g stroke="#e5c88c" stroke-width="4">
+ <circle cx="375" cy="369" r="22" fill="#e8d8ae"/>
+ <circle cx="539" cy="489" r="22" fill="#4ba9cc"/>
+ <circle cx="477" cy="682" r="22" fill="#695172"/>
+ <circle cx="273" cy="682" r="22" fill="#c76143"/>
+ <circle cx="211" cy="489" r="22" fill="#5c9a77"/>
+</g>
+<g fill="#fff" opacity=".55"><circle cx="369" cy="362" r="6"/><circle cx="533" cy="482" r="6"/><circle cx="471" cy="675" r="6"/><circle cx="267" cy="675" r="6"/><circle cx="205" cy="482" r="6"/></g>
+<g text-anchor="middle" font-family="Georgia,serif" fill="url(#gold)" stroke="#1c1420" stroke-width="2" paint-order="stroke fill">
+ <text fill="#ebcb8b" stroke-width="0.6" x="375" y="239" font-size="26" letter-spacing="10">THE</text>
+ <text x="375" y="300" font-size="62" font-weight="bold" letter-spacing="4">PROXY PLANE</text>
+ <text fill="#ebcb8b" stroke-width="0.6" x="375" y="809" font-size="24" letter-spacing="7">JADE SOVEREIGN</text>
+</g>
+<path d="M239 842h272M277 854h196" stroke="url(#gold)" stroke-width="2"/>
+<text x="375" y="951" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" letter-spacing="4" fill="#e6c993">UNOFFICIAL · PROXY CARD</text>
+</svg>

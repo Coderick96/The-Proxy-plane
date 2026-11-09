@@ -1,0 +1,1 @@
+PASS actual HTTP AI transport: >6 MiB streamed JSON/three choices, private headers, one credit/idempotent retry, owner-only recovery, metadata-only list, oversized serverless input rejected before charge, small input accepted, conventional limit preserved, disconnect recovery, serialization before headers (mock providers/RPC).

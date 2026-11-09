@@ -31,7 +31,7 @@ The primary AI panel now keeps the prompt, three-choice gallery and apply action
 
 ## Executed verification
 
-- PASS: `npm test` — 24 groups, including AI transport/reference regressions and 16 UI fixtures.
+- PASS: `npm test` — 24 groups, including AI transport/reference regressions and 17 UI fixtures.
 - PASS: `npm run build` — production bundle; existing large-chunk advisory remains.
 - PASS: `node tests/ai-transport.mjs` — real local HTTP: >6 MiB streaming, private headers, one debit, duplicate delivery, owner-only recovery, metadata-only listing, serverless oversize rejection before debit, conventional input limit, disconnect/recovery and serialize-before-headers. Providers and RPC boundary are mocks; SQL durability/RLS tested separately in the aggregate suite.
 - PASS: `node tests/ai-reference-browser.mjs` — real Chromium converted a 3,612,634-character reference to 1,160,319 characters at 1536 × 922, within the upload bound and preserving aspect ratio.
@@ -39,3 +39,7 @@ The primary AI panel now keeps the prompt, three-choice gallery and apply action
 - NOT RUN: native Safari/iPhone, hosted provider image generation, real credit delivery or hosted Cron.
 
 Log files in this directory contain the executed evidence.
+
+## Independent review and account-switch follow-up
+
+Independent source review passed transport/reference handling, in-app artwork wiring, account identity rechecks and interrupted JSON handling. The reviewer found a stale busy-state race in `App.generateArt`; it is fixed using workspace epoch, request generation and account scope guards for success/error/finally. Account switches now also clear private prompts/errors. An actual App fixture verifies delayed A→B and A→B→A completions cannot enter another workspace or clear a newer request's busy state. The reviewer source-reviewed this fix and marked the finding resolved. Independent test execution was blocked by a permission flow; executed logs are explicitly the lead agent's evidence.

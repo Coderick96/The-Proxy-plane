@@ -21,15 +21,15 @@ dist/assets/mana-nXJ1YO3J.eot              408.36 kB
 dist/assets/mana-CylcniHU.svg            1,907.69 kB │ gzip: 768.71 kB
 dist/assets/index-DkZsf6Jm.css             131.47 kB │ gzip:  28.66 kB
 dist/assets/aiReference-CAdEIKRE.js          1.18 kB │ gzip:   0.66 kB
-dist/assets/printRaster-7r1tvlj-.js          2.75 kB │ gzip:   1.25 kB
+dist/assets/printRaster-DJ4LCcUk.js          2.75 kB │ gzip:   1.25 kB
 dist/assets/purify.es-CAi2OJFm.js           30.47 kB │ gzip:  11.73 kB
-dist/assets/index.es-DMbrgQP6.js           159.77 kB │ gzip:  53.56 kB
+dist/assets/index.es-qNNENWus.js           159.77 kB │ gzip:  53.56 kB
 dist/assets/html2canvas.esm-QH1iLAAe.js    202.38 kB │ gzip:  48.04 kB
-dist/assets/printPDF-C0Q48zWB.js           390.63 kB │ gzip: 128.76 kB
-dist/assets/index-DNCuBxS1.js              625.20 kB │ gzip: 175.47 kB
+dist/assets/printPDF-CfaEq1Jb.js           390.63 kB │ gzip: 128.76 kB
+dist/assets/index-BtSUT9uC.js              625.32 kB │ gzip: 175.50 kB
 
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 4.69s
+✓ built in 5.40s

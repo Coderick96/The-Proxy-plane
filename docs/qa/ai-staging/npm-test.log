@@ -96,6 +96,7 @@ PASS: library reverse-face preview, queue and editable import; result-grid actio
 PASS actual Card Library: filter-only/advanced queries, draft filters preserve loaded pagination, clear resets controls and aborts requests, stale search/page suppression, browse-all, immediate price/mana sorting with filter preservation, default-sort reset (mock Scryfall).
 PASS actual App auth recovery: pending/rejected email sign-in and signup, successful retries, Google/Apple rejection, failed-signout identity/workspace retention and successful signout isolation (simulated DOM/providers).
 PASS integrated Artwork Studio: prompt/generate/three choices/apply stay in-app, no companion on primary actions, offline/login/busy gates, inline errors and explicit optional companion.
+PASS actual App AI requests: old account results cannot enter another account or clear its pending state; A/B/A stale completion cannot replace a new request.
 PASS AI recovery UI: metadata-first retrieval, no new charge, auth/A-B-A isolation, private result application, generated operation IDs and recoverable errors (simulated DOM/providers).
 
 Suite summary: PASS (24 groups)

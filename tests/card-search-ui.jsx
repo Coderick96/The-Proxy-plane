@@ -30,8 +30,11 @@ async function run(){
   await act(async()=>deferred({ok:true,json:async()=>({data:[card('Stale card')],has_more:true,next_page:'https://api.scryfall.com/cards/search?page=2'})}));assert.equal(document.querySelectorAll('.result-card').length,0);assert(!document.body.textContent.includes('Stale card'));
   hold=false;await submit();hold=true;await button('Load more cards');const oldPage=deferred;await button('Clear results');hold=false;await submit();
   await act(async()=>oldPage({ok:true,json:async()=>({data:[card('Old page card')],has_more:false})}));assert(!document.body.textContent.includes('Old page card'));assert.equal(document.querySelectorAll('.result-card').length,1);
+  await click('.card-search-filters summary');await button('Blue');
+  for(const [id,order,dir] of [['price-asc','usd','asc'],['price-desc','usd','desc'],['mana-asc','cmc','asc'],['mana-desc','cmc','desc']]){await act(async()=>{const select=document.querySelector('.catalog-sort select');select.value=id;select.dispatchEvent(new window.Event('change',{bubbles:true}));});const url=new URL(calls.at(-1).url);assert.equal(url.searchParams.get('order'),order);assert.equal(url.searchParams.get('dir'),dir);assert.equal(url.searchParams.get('q'),'(c:u)');assert.equal(document.querySelector('.catalog-sort select').value,id);}
+  await button('Clear results');assert.equal(document.querySelector('.catalog-sort select').value,'released-desc');
   await click('.card-search-filters summary');await button('Blue');await button('Reset filters');assert.equal(document.querySelectorAll('.card-filter-chip[aria-pressed=true]').length,0);
-  console.log('PASS actual Card Library: filter-only/advanced queries, draft filters preserve loaded pagination, clear resets controls and aborts requests, stale search/page suppression, browse-all and reset (mock Scryfall).');
+  console.log('PASS actual Card Library: filter-only/advanced queries, draft filters preserve loaded pagination, clear resets controls and aborts requests, stale search/page suppression, browse-all, immediate price/mana sorting with filter preservation, default-sort reset (mock Scryfall).');
  }finally{await act(async()=>root.unmount())}
 }
 run().catch(error=>{console.error(error);process.exitCode=1});

@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {buildCardSearch,matchingSets} from '../src/cardSearch.js';
+assert.equal(buildCardSearch('Sol Ring'),'(Sol Ring)');
+assert.equal(buildCardSearch('',{set:'BLB',colors:[],rarities:[]}),'set:blb');
+assert.equal(buildCardSearch('',{set:'',colors:['w','u','c'],rarities:['rare','mythic']}),'(c:w or c:u or c:c) (r:rare or r:mythic)');
+assert.equal(buildCardSearch('t:dragon or t:angel',{set:'m21',colors:['r'],rarities:['rare']}),'(t:dragon or t:angel) set:m21 (c:r) (r:rare)');
+assert.equal(buildCardSearch('',{set:'blb) or *',colors:['invalid'],rarities:['invalid']}),'');
+assert.equal(buildCardSearch('   '),'');
+const sets=[{name:'Alpha',code:'lea',released_at:'1993-08-05'},{name:'Bloomburrow',code:'blb',released_at:'2024-08-02'}];
+assert.deepEqual(matchingSets(sets,'BLB').map(s=>s.code),['blb']);
+assert.deepEqual(matchingSets(sets,'bloom').map(s=>s.code),['blb']);
+assert.deepEqual(matchingSets(sets,'').map(s=>s.code),['blb','lea']);
+assert.equal(matchingSets(sets,'no such set').length,0);
+console.log('PASS card search: filter-only sets, any-color and rarity unions, advanced OR grouping, invalid filter rejection, code/name lookup and newest-first set browsing.');

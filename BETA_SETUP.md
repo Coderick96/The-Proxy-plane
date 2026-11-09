@@ -1,11 +1,12 @@
 # The Proxy Plane 2.6.1 — private beta for 10 cardsmiths
 
-Connected project: **Proxy plane** (`esndctzrbpoiljwenevp`). Its database and
-private buckets are already initialized. For this project, skip SQL installation
-in step 2. The beta environment example contains its public URL/publishable key.
-You still need your owner Auth account, its UUID, and a server-only secret key
-in your own .env/hosting settings. No owner account exists yet. Never share the
-server secret key in chat or put it in a VITE variable.
+Current staging status: **Proxy plane** (`esndctzrbpoiljwenevp`) contains real
+user data and is read-only for this work. Use a NEW isolated project or development
+branch for the installation steps below. Do not run these setup scripts against
+the existing real-data project. Hosted staging accounts and cloud AI remain paused
+until their isolated backend and credentials are verified. A free staging project
+could not be provisioned because the connected account has reached its free-project
+limit. Never share server secret keys in chat or put them in VITE variables.
 
 This package is prepared for a closed beta, not an already-hosted service.
 You can test on your PC today, then share a hosted HTTPS URL when deployed.

@@ -1,0 +1,1 @@
+PASS actual Chromium AI reference resize, upload bound, aspect preservation and decode failure: {"before":3612634,"after":1160319,"limit":2621440,"type":"data:image/jpeg;base64,","width":1536,"height":922,"error":"This reference could not be prepared for upload. Choose a smaller image. No credits were charged."}

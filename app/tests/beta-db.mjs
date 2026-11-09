@@ -1,0 +1,32 @@
+import {PGlite}from '@electric-sql/pglite';import fs from 'node:fs';import assert from 'node:assert/strict';
+const db=new PGlite();
+await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;create schema auth;create schema storage;create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);create function auth.uid()returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth,storage,public to anon,authenticated,service_role;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text,name text,metadata jsonb);alter table storage.objects enable row level security;create function storage.foldername(text)returns text[] language sql immutable as $$select string_to_array($1,'/')$$;grant select,insert,update,delete on storage.objects to anon,authenticated;`);
+for(const name of['schema','community','premium','evolution','credits','beta','beta'])await db.exec(fs.readFileSync(new URL('../supabase/'+name+'.sql',import.meta.url),'utf8'));
+const id=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0'),owner=id(1),a=id(2),b=id(3),unverified=id(4),outsider=id(5);
+for(const [n,email,confirmed]of[[1,'owner@example.test',true],[2,'a@example.test',true],[3,'b@example.test',true],[4,'unverified@example.test',false],[5,'outsider@example.test',true]])await db.query('insert into auth.users values($1,$2,$3)',[id(n),email,confirmed?new Date().toISOString():null]);
+async function as(role,user=''){await db.exec(`reset role;select set_config('request.jwt.claim.sub','${user}',false);set role ${role}`)}
+const denied=async(sql,args=[])=>{let error=false;try{await db.query(sql,args)}catch{error=true}assert(error,sql)};
+const claim=async uid=>(await db.query('select public.pp_beta_claim($1) r',[uid])).rows[0].r;
+await as('service_role');await db.query('select public.pp_beta_configure($1)',[owner]);
+assert.equal((await claim(owner)).owner,true);assert.equal((await claim(outsider)).allowed,false);
+await db.query("select public.pp_beta_set_seat(1,' A@Example.Test ')");await db.query("select public.pp_beta_set_seat(2,'b@example.test')");await db.query("select public.pp_beta_set_seat(3,'unverified@example.test')");
+assert.equal((await claim(unverified)).allowed,false);assert.equal((await claim(a)).allowed,true);assert.equal((await claim(b)).allowed,true);
+await denied("select public.pp_beta_set_seat(11,'extra@example.test')");await denied("select public.pp_beta_set_seat(4,'a@example.test')");await denied("select public.pp_beta_set_seat(4,'owner@example.test')");
+for(let n=4;n<=10;n++)await db.query('select public.pp_beta_set_seat($1,$2)',[n,'tester'+n+'@example.test']);
+assert.equal((await db.query('select count(*) n from public.pp_beta_seats')).rows[0].n,10);
+await as('authenticated',a);assert.equal((await db.query('select public.pp_beta_allowed() a')).rows[0].a,true);
+await denied('select * from public.pp_beta_seats');await denied('select public.pp_beta_set_seat(1,\'hack@example.test\')');await denied('select public.pp_beta_claim($1)',[outsider]);
+assert.equal((await db.query('select public.pp_my_access() a')).rows[0].a.credits,15);
+const card=id(100);await db.query("insert into public.proxy_kingdom_projects(id,user_id,title,project_json)values($1,$2,'Test',$3)",[card,a,JSON.stringify({id:card,name:'Test',back:{mode:'none'}})]);
+await db.query("insert into public.pk_profiles(id,username,display_name)values($1,'tester_a','Tester A')",[a]);
+await db.query("update public.proxy_kingdom_projects set visibility='public'where id=$1",[card]);
+await db.query("insert into public.pk_posts(project_id,owner_id,title,image_path)values($1,$2,'Test',$3)",[card,a,a+'/'+card+'.png']);
+await db.query("insert into storage.objects(bucket_id,name,metadata)values('proxy-kingdom-community',$1,'{\"size\":10}')",[a+'/'+card+'.png']);
+await db.query("insert into public.pp_beta_feedback(user_id,category,title,details)values($1,'bug','Test issue','Steps and actual result go here.')",[a]);
+await as('authenticated',b);assert.equal((await db.query('select count(*) n from public.pk_posts')).rows[0].n,1);assert.equal((await db.query('select count(*) n from public.pp_beta_feedback')).rows[0].n,0);assert.equal((await db.query('select count(*) n from public.proxy_kingdom_projects')).rows[0].n,0);
+for(const role of['anon','authenticated']){await as(role,role==='authenticated'?outsider:'');assert.equal((await db.query('select public.pp_beta_allowed() a')).rows[0].a,false);assert.equal((await db.query('select count(*) n from public.pk_profiles')).rows[0].n,0);assert.equal((await db.query('select count(*) n from storage.objects')).rows[0].n,0);await denied('select * from public.pk_gallery()');await denied('select * from public.pp_home_featured()');await denied('select public.pp_public_badge($1)',[a]);await denied('select * from public.pp_showcase($1)',[a]);}
+await as('authenticated',outsider);await denied("insert into public.pk_profiles(id,username,display_name)values($1,'outsider','Outsider')",[outsider]);
+await as('authenticated',a);for(let n=0;n<9;n++)await db.query("insert into public.pp_beta_feedback(user_id,category,title,details)values($1,'bug','More feedback','At least ten characters here')",[a]);await denied("insert into public.pp_beta_feedback(user_id,category,title,details)values($1,'bug','Too many','At least ten characters here')",[a]);
+await as('service_role');await db.query("select public.pp_beta_set_seat(1,'replacement@example.test')");await as('authenticated',a);assert.equal((await db.query('select public.pp_beta_allowed() a')).rows[0].a,false);assert.equal((await db.query('select count(*) n from public.proxy_kingdom_projects')).rows[0].n,0);await denied('select * from public.pk_gallery()');await denied("insert into public.pp_beta_feedback(user_id,category,title,details)values($1,'bug','Revoked','Cannot submit anymore')",[a]);
+await as('service_role');assert.equal((await claim(a)).allowed,false);assert.equal((await db.query('select public.pp_access_for($1) a',[b])).rows[0].a.credits,15);
+await db.close();console.log('Passed 10-seat cap, separate owner, verified-email claims, duplicate/outsider rejection, roster privacy, direct REST/RPC/storage beta gates, private/rate-limited feedback, revocation and service-role access.');

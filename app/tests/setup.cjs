@@ -1,0 +1,1 @@
+const {JSDOM}=require('jsdom');const dom=new JSDOM('<div id="root"></div>',{url:'http://localhost/'});global.window=dom.window;global.document=dom.window.document;global.HTMLElement=dom.window.HTMLElement;global.IS_REACT_ACT_ENVIRONMENT=true;Object.defineProperty(global,'navigator',{value:dom.window.navigator,configurable:true});

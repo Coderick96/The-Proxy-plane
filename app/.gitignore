@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+!.env.beta.example
+.DS_Store
+*.log
+.vercel/
+.local-art-keys/
+.venv/
+__pycache__/
+*.pyc

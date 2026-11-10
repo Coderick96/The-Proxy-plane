@@ -19,7 +19,7 @@ try{
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('popup',()=>popups++);
  await page.goto(origin);await page.waitForFunction(()=>localStorage.getItem('pk-account:ai-browser-owner:projects')!==null);
  await page.locator('.plane-destination').filter({hasText:'AI Art Studio'}).click();
- const panel=page.locator('.integrated-art-studio');await panel.getByLabel('Describe your artwork').fill('A moonlit dragon over a mountain city');
+ await page.getByRole('button',{name:'Cloud (account credits)',exact:true}).click();const panel=page.locator('.integrated-art-studio');await panel.getByLabel('Describe your artwork').fill('A moonlit dragon over a mountain city');
  await panel.getByRole('button',{name:'Generate 3 choices · 1 credit',exact:true}).click();await panel.getByRole('button',{name:'Use option 2',exact:true}).waitFor();
  assert.equal(await panel.locator('.art-choice-grid img').count(),3);assert.equal(generationCalls,1);assert.equal(popups,0);
  await panel.getByRole('button',{name:'Use option 2',exact:true}).click();await page.waitForFunction(()=>document.body.textContent.includes('Selected artwork applied.'));

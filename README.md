@@ -1,3 +1,5 @@
+Browser-local artwork is now available in the feature preview: **AI Art Studio → On this device**. It runs on compatible browser GPUs without a desktop companion, OpenAI key or account credits. See [DEVICE_AI.md](DEVICE_AI.md) for download size, license, hardware limits and verification status. Existing cloud and desktop features remain optional.
+
 > Current repair candidate: authoritative **2.6.5 Local Art** source. See [verification, known blockers, and local run instructions](docs/qa/RELEASE-REVIEW.md). This branch is not deployed or approved for release. [Try the local test build](TESTING.md).
 
 # The Proxy Plane 2.6.5 — private-beta test candidate

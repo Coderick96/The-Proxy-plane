@@ -1,0 +1,112 @@
+
+> the-proxy-plane@2.6.5 test
+> node tests/run-all.mjs
+
+
+=== device-ai-downloads ===
+PASS device downloads: SHA/size verification, immutable manifest, verified cache reuse, corruption eviction/retry, quota fallback, credential/referrer omission, unending oversize cancellation, bounded progress, GPU feature gates and isolated cache removal.
+
+=== device-ai-math ===
+PASS LCM independent numeric oracles, deterministic Gaussian/statistics, CHW image conversion, sequential released sessions, 3-image/12-step pipeline, correct VAE scaling and incompatible model rejection (mock sessions; no GPU inference).
+
+=== device-ai-tokenizer ===
+PASS real pinned CLIP vocabulary/merges against seven official tokenizer oracles, Unicode NFC, truncation and EOS padding.
+
+=== ai-reference ===
+PASS AI reference: unchanged small valid references, invalid/remote/oversized rejection before upload, request-size headroom.
+PASS resketch client: account-switch/preparation errors never fetch and retain operation IDs; stable requests proceed.
+PASS interrupted HTTP-200 JSON streams reject and retain recovery operation ID.
+
+=== ai-transport ===
+PASS actual HTTP AI transport: >6 MiB streamed JSON/three choices, private headers, one credit/idempotent retry, owner-only recovery, metadata-only list, oversized serverless input rejected before charge, small input accepted, conventional limit preserved, disconnect recovery, serialization before headers (mock providers/RPC).
+
+=== card-search ===
+PASS card search: filter-only sets, any-color and rarity unions, advanced OR grouping, invalid filter rejection, code/name lookup and newest-first set browsing.
+PASS catalog sorting: all USD/mana directions, default/fallback sort, grouped filter preservation, no hidden price predicate, zero/missing price labels.
+
+=== uuid ===
+PASS secure UUID native path and getRandomValues v4 fallback for local-network/mobile browsers; unavailable entropy fails closed.
+
+=== card-backs ===
+Passed backing inheritance/overrides, unsupported backing rejection, portrait/landscape edge mapping, paired partial sheets and fronts/backs-only page order.
+
+=== deck-import ===
+Passed deck formats/sections/quantities, printing normalization, 75-card batching and dedupe, out-of-order/missing matches, double faces, URL adapters, redirect/HTML rejection and free HTTP URL import.
+
+=== print-output ===
+Print regression checks passed: all papers/orientations/bleed, duplex slots, 300 DPI, exact PDF geometry, color document, asset failures.
+Print Studio checks passed: spacing vs bleed, front offsets, guide modes, ranges, calibration numbering/ruler/color, 1200 DPI, selected-page capture, cancellation.
+Mobile print document checks passed: complete document with user-activated print button and no waiting popup.
+True-size PDF checks passed across every supported paper/orientation: fixed 180 × 252 point cards and no-scaling preference; undersized paper cannot shrink cards.
+Direct print uses a physical-size PDF, with the same fixed card boxes as downloaded PDFs.
+Hard size guard passed: undersized/oversized jobs refused at layout, PDF and HTML boundaries; bleed preserves exact trim.
+
+=== ai-safety ===
+Passed all AI route input/output safety gates, reference and candidate image checks, targeted refusals, no input charge, exact output refunds, fail-closed provider errors, auth and concurrent-check lock (mock providers).
+
+=== credits-db ===
+Passed one-time 10 starter credits, exhaustion/no daily reset, 200 paid-month credits, duplicate invoice/period protection, expiry, revocation, downgrade, wallet preservation, exact refunds and RLS account isolation.
+
+=== credits-compat ===
+PASS fresh and historical 15-credit schema compatibility: repeat setup, unchanged used legacy balances and paid wallet, new 10-credit spend, unknown custom CHECK rejected atomically.
+
+=== ai-recovery-db ===
+PASS durable AI crash/lease refund, retry after refund outage, duplicate delivery, terminal-state races, owner isolation, historical preservation, service-only grants, 3-choice cost.
+
+=== monthly-billing ===
+Passed monthly grant owner/price/paid-status/cycle/interval checks; zero-payment, canceled, annual, proration and unrelated invoice rejection (mock Stripe).
+
+=== premium-db ===
+Passed premium migration/RLS, server-only grants, duplicate purchases/invoices, credit debits/refunds, pack ownership, membership downgrade, full-vault edits, private versions/templates and cloud storage quotas.
+
+=== premium-server ===
+Passed HTTP auth gates, server-selected prices/account ownership, real Stripe signature verification, unpaid/refunded checkout denial, current subscription state, credit charging/refund and AI set validation (mock providers).
+
+=== premium-logic ===
+Passed template text/art/privacy preservation, safe history restore, pack ownership, missing-asset detection, bleed trim geometry and cloud pagination past 1,000 cards.
+
+=== evolution-db ===
+Passed free 20/day allowance, exhaustion, duplicate protection, mixed-wallet charging, exact refunds across UTC rollover, account isolation and private paid-deck entitlements/refunds.
+
+=== deck-store-server ===
+Passed private deck file protection, membership/purchase checks, owner-only publication, upload constraints, rights confirmation and short-lived signed download URLs.
+
+=== beta-db ===
+Passed 10-seat cap, separate owner, verified-email claims, duplicate/outsider rejection, roster privacy, direct REST/RPC/storage beta gates, private/rate-limited feedback, revocation and service-role access.
+
+=== beta-server ===
+Passed beta HTTP admission, owner-only roster/inbox, server-owned feedback identity, immediate revocation, configuration failure closure, paused AI and live-purchase blocking (mock accounts/providers).
+
+=== privacy ===
+Passed migration repeatability, default privacy, anonymous/other-owner isolation, profile/collection/card privacy, storage reads, following feed and ownership constraint checks.
+
+=== workspace-state ===
+Passed explicit guest-copy privacy, duplicate avoidance and full-vault data preservation.
+
+=== local-art-web ===
+Local art web integration passed with fixture PNGs.
+
+=== billing-test-mode ===
+Passed test-only billing guards for live/missing/restricted keys, checkout/portal/catalog/decks, signed live/missing-mode webhook rejection and service-level fulfillment guard (local mocks; no Stripe network).
+
+=== run-ui ===
+Passed Home navigation, Cardsmith labels, private collection defaults, vault organization, account gate, eligibility and fail-private publication order checks.
+Passed actual App auth-switch hydration: guest, Cardsmith A and Cardsmith B never cross-write or display each other’s local vaults.
+Passed actual backup import account switch + A/B/A generation isolation, idempotent restore/conflict rule, unique queue removal, atomic nested validation and legacy recovery (simulated DOM).
+Passed actual App backing controls, blank per-card override, paired/backs-only previews, partial sheet slots and saved backing persistence.
+Passed actual paid App templates/batch styles, private version restore, owned backing selection, generated set saving and bleed/alignment profile persistence (simulated DOM).
+Passed actual free App list/URL import, commander/sideboard defaults, unmatched exclusion, exact copy counts, queue append and account-scoped deck draft persistence (simulated DOM).
+Passed real staple welcome images, Gathering Plane naming, three-image selection, reference re-sketch, removed premium frames and attributed private proxy imports (simulated DOM).
+Passed beta sign-in wall, 10-slot owner roster, private tester feedback form and missing-config closure (simulated DOM).
+Queue UI passed: preview removal updates fronts, paired backs, and empty queue.
+Spacing preview regression passed: empty/populated queues at no bleed, 1/16 and 1/8 inch bleed; trim remains 2.5 × 3.5 inches.
+PASS homepage: actual navigation callbacks, account states, credit terms, recent-card editing, disclaimer and offline artwork fallback (simulated DOM).
+PASS: library reverse-face preview, queue and editable import; result-grid actions do not inherit another selected face.
+PASS actual Card Library: filter-only/advanced queries, draft filters preserve loaded pagination, clear resets controls and aborts requests, stale search/page suppression, browse-all, immediate price/mana sorting with filter preservation, default-sort reset (mock Scryfall).
+PASS actual App auth recovery: pending/rejected email sign-in and signup, successful retries, Google/Apple rejection, failed-signout identity/workspace retention and successful signout isolation (simulated DOM/providers).
+PASS integrated Artwork Studio: prompt/generate/three choices/apply stay in-app, no companion on primary actions, offline/login/busy gates, inline errors and explicit optional companion.
+PASS device artwork UI: guest generation consent, three choices/apply, job IDs, bounded progress, cancel/late-result rejection, account/card privacy reset, invalid-output recovery, unsupported hardware and cache controls without API/credit calls (mock Worker/canvas).
+PASS actual App AI requests: old account results cannot enter another account or clear its pending state; A/B/A stale completion cannot replace a new request.
+PASS AI recovery UI: metadata-first retrieval, no new charge, auth/A-B-A isolation, private result application, generated operation IDs and recoverable errors (simulated DOM/providers).
+
+Suite summary: PASS (27 groups)

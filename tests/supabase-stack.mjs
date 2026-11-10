@@ -35,7 +35,7 @@ const docker=(args,input)=>command('docker',['--host=unix:///var/run/docker.sock
 const cli=(args)=>command('npm',['exec','--yes','--cache',cache,'--package=supabase@3.1.0','--','supabase','--workdir',directory,...args]);
 const sql=text=>docker(['exec','-i','supabase_db_'+id,'psql','-U','postgres','-X','-qAt','-v','ON_ERROR_STOP=1'],text);
 const loopback=value=>{const url=new URL(value);assert(['127.0.0.1','localhost','[::1]'].includes(url.hostname),'Only local service URLs are permitted');assert.equal(url.protocol,'http:');return url;};
-const requireSuccess=(result,label)=>assert(!result.error,label+' failed: '+(result.error?.code||result.error?.status||'unknown'));
+const requireSuccess=(result,label)=>assert(!result.error,label+' failed: '+clean(result.error?.message||result.error?.code||result.error?.status||'unknown'));
 const denied=result=>assert(result.error,'Cross-account operation unexpectedly succeeded');
 function section(text,name,changes){
  const heading='['+name+']',start=text.indexOf(heading);assert(start>=0,'Generated CLI config is missing '+name);
@@ -95,7 +95,7 @@ try{
  console.log('PASS actual disposable Supabase services started with loopback-only published ports.');
  // These are actual service schemas; no auth/storage compatibility tables are substituted.
  await sql("select count(*) from auth.users;select count(*) from storage.objects;");
- for(const name of ['schema','community','premium','evolution','credits','ai_recovery','dev_credits'])await sql(await readFile(new URL('../supabase/'+name+'.sql',import.meta.url),'utf8'));
+ for(const name of ['schema','community','premium','evolution','credits','ai_recovery','dev_credits','storage_quota_compat'])await sql(await readFile(new URL('../supabase/'+name+'.sql',import.meta.url),'utf8'));
  await sql("notify pgrst,'reload schema';");
  const options={auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}};
  const admin=createClient(api,serviceKey,options),users=[];

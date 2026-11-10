@@ -13,3 +13,7 @@ Status: launch remains BLOCKED pending operational/physical evidence. This branc
 | Genuine GPU and physical printing | NOT TESTED | Existing software Add/PDF evidence is narrower. A compatible physical device and actual printer still require validation. |
 
 No main merge, production deployment, paid resource, live payment or real-user data mutation. Recovery configuration and acceptance instructions are in AI_RECOVERY_SETUP.md. Full-stack test creates only a random local Docker project and cleans it with explicit project-specific stop; no hosted URL/project is accepted.
+
+## Confirmed Storage repair
+
+The first actual Storage upload failed with DatabaseError. Reproduction with the real Storage `owner` column exposed an ambiguous PL/pgSQL variable in `pp_storage_fits`; the simplified old fixtures lacked that column. The SQL argument in `pp_usage_bytes` could also bind to the Storage column and miscount per-account usage. Fixed with a noncolliding local variable and positional SQL parameter. Regression fixtures now include owner/owner_id, null/mismatched legacy owners, foreign files and metadata updates. Lead and independent QA both executed the premium SQL suite successfully. The focused compatibility script changes only functions/grants, not user data; real Storage HTTP remains pending its rerun.

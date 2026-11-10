@@ -110,3 +110,7 @@ Keep main and production unchanged until approval. Preserve card backups, immuta
 `npm run test:supabase-stack` starts a uniquely named disposable local Supabase CLI3.1.0 project and tests real Storage HTTP permissions and Mailpit confirmation delivery. It automatically downloads its pinned CLI/service versions and requires sufficient Docker disk space; use the dedicated GitHub job when the local workspace is too small. It accepts no existing project or hosted URL, cleans up only its own project, and is not production setup. Passing local Mailpit does not prove delivery through your real SMTP provider or external Google/Apple callbacks.
 
 For cloud AI recovery on serverless, follow [AI_RECOVERY_SETUP.md](AI_RECOVERY_SETUP.md). A strong server-only `CRON_SECRET` protects the bounded reconciliation endpoint. Do not set `AI_RECOVERY_SCHEDULER_VERIFIED=true` until you have recorded actual scheduler execution against approved staging. Keep cloud AI paused until that operational check passes.
+
+### Storage schema compatibility repair
+
+Fresh `premium.sql` includes the Storage owner-column fix. For an existing **approved isolated** database that has the older quota functions, review and apply only `supabase/storage_quota_compat.sql`; do not replay the entire baseline to repair them. It replaces two functions atomically without changing rows/tables and preserves beta gallery guards. The existing real-data projects remain read-only; this patch has not been applied there.

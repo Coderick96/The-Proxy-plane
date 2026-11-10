@@ -25,7 +25,7 @@ function outputValues(outputs,key){
  if(!tensor||tensor.type!=='float32'||!(tensor.data instanceof Float32Array)||tensor.dims?.length!==spec.shape.length||tensor.dims.some((size,i)=>size!==spec.shape[i])||tensor.data.length!==spec.shape.reduce((a,b)=>a*b,1))throw new Error(`The ${key} model returned an unexpected tensor.`);
  return tensor.data;
 }
-export function createDeviceEngine({ort,models,vocab,merges,progress=()=>{}}){
+export function createDeviceEngine({ort,models,vocab,merges,progress=()=>{},beforeGenerate=async()=>{}}){
  if(!ort?.InferenceSession?.create||!ort?.Tensor||!models)throw new Error('The device inference runtime is unavailable.');
  const tokenize=createDeviceTokenizer(vocab,merges),sessions=new Set();let disposed=false,busy=false;
  const alive=()=>{if(disposed)throw new Error('Device generation was canceled.');};
@@ -50,6 +50,7 @@ export function createDeviceEngine({ort,models,vocab,merges,progress=()=>{}}){
     finally{await release(text);}
     const latents=[],unet=await session('unet');
     try{
+     alive();await beforeGenerate();alive();
      for(let image=0;image<3;image++){
       const noise=seededGaussian(seeds[image]);let sample=noise(LATENT_COUNT);
       for(let step=0;step<LCM_TIMESTEPS.length;step++){

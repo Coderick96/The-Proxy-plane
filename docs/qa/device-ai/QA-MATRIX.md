@@ -1,3 +1,5 @@
+> Historical PR7 evidence: free/guest behavior below has been superseded by paid, authenticated device generation. Current evidence: [runtime and credit fix](../runtime-credit-fix/QA-MATRIX.md).
+
 # Browser-device AI verification
 
 | Area | Status | Executed evidence / limitation |

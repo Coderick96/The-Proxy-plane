@@ -103,3 +103,42 @@ create or replace function public.pp_refund_ai(charge_id uuid)returns void langu
 revoke all on function public.pp_grant_monthly(uuid,text,text,timestamptz,timestamptz),public.pp_revoke_monthly(text)from public,anon,authenticated;
 grant execute on function public.pp_grant_monthly(uuid,text,text,timestamptz,timestamptz),public.pp_revoke_monthly(text)to service_role;
 commit;
+
+-- Browser-device request receipts: one server-authorized credit per three-choice batch.
+-- Local computation cannot be attested by the server. These receipts never enter
+-- pp_ai_operations' lease/refund loop, and there is no client-controlled refund RPC.
+begin;
+create table if not exists public.pp_device_ai_receipts(
+ operation uuid primary key references public.pp_ai_charges(operation) on delete cascade,
+ user_id uuid not null references auth.users(id) on delete cascade,
+ model_revision text not null check(model_revision ~ '^[a-f0-9]{40}$'),
+ fingerprint text not null check(fingerprint ~ '^[a-f0-9]{64}$'),
+ credits_spent integer not null default 1 check(credits_spent=1),
+ created_at timestamptz not null default clock_timestamp()
+);
+create index if not exists pp_device_ai_receipts_user on public.pp_device_ai_receipts(user_id);
+alter table public.pp_device_ai_receipts enable row level security;
+revoke all on public.pp_device_ai_receipts from public,anon,authenticated;
+grant all on public.pp_device_ai_receipts to service_role;
+create or replace function public.pp_charge_device_ai(owner uuid,operation uuid,model_revision text,fingerprint text)
+returns jsonb language plpgsql security definer set search_path='' as $$
+declare previous public.pp_device_ai_receipts;
+begin
+ if owner is null or operation is null or model_revision is distinct from 'a310400909a293a7a937a54854910ed06469192b' or fingerprint is null or fingerprint !~ '^[a-f0-9]{64}$' then raise exception 'Invalid device credit request';end if;
+ -- Match the canonical credit lock order: account first, then operation.
+ perform 1 from auth.users u where u.id=owner for update;
+ if not found then raise exception 'Account not found';end if;
+ perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(operation::text,0));
+ select * into previous from public.pp_device_ai_receipts r where r.operation=pp_charge_device_ai.operation;
+ if found then
+  if previous.user_id<>owner or previous.model_revision<>model_revision or previous.fingerprint<>fingerprint then raise exception 'Device request identifier is unavailable' using errcode='23505';end if;
+  if not exists(select 1 from public.pp_ai_charges c where c.operation=pp_charge_device_ai.operation and c.user_id=owner and not c.refunded) then raise exception 'Device request was refunded or is unavailable' using errcode='23505';end if;
+ else
+  perform public.pp_spend_credits(owner,operation,1);
+  insert into public.pp_device_ai_receipts(operation,user_id,model_revision,fingerprint) values(operation,owner,model_revision,fingerprint);
+ end if;
+ return jsonb_build_object('operationId',operation,'mode','device','modelRevision',model_revision,'creditsSpent',1);
+end $$;
+revoke all on function public.pp_charge_device_ai(uuid,uuid,text,text) from public,anon,authenticated;
+grant execute on function public.pp_charge_device_ai(uuid,uuid,text,text) to service_role;
+commit;

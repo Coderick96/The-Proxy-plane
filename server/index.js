@@ -11,6 +11,8 @@ import {checkAISafety} from './aiSafety.js';
 import {createServices,catalog,testBillingAllowed,isTestStripeKey} from './premium.js';
 import {structuredAI,SET_SCHEMA,REVIEW_SCHEMA,validateSet} from './ai.js';
 import {mountDeckStore} from './deckStore.js';
+import {mountDeviceCredits} from './deviceCredits.js';
+import {mountDevCredits} from './devCredits.js';
 import {fetchDeck} from './deckImport.js';
 import {PACKS,ownsPack} from '../src/premiumCatalog.js';
 export function createApp({env=process.env,services=createServices(env),fetcher=fetch}={}){
@@ -27,6 +29,8 @@ export function createApp({env=process.env,services=createServices(env),fetcher=
  app.use(express.json({limit:'12mb'}));
  app.get('/api/health',(_req,res)=>res.json({ok:true,aiConfigured:Boolean(env.OPENAI_API_KEY),accountsConfigured:services.configured,billingConfigured:Boolean(testBillingAllowed(env)&&services.stripe&&env.STRIPE_WEBHOOK_SECRET)}));
  mountBeta(app,{env,services,route});
+ mountDeviceCredits(app,{env,services,route});
+ mountDevCredits(app,{env,services,route});
  const betaSalesOff=()=>!testBillingAllowed(env);
  app.use(['/api/billing/checkout','/api/billing/portal'],(req,res,next)=>betaSalesOff()?res.status(403).json({error:'Purchases require test-mode Stripe credentials; private beta also requires test billing opt-in.'}):next());
  const deckLimits=new Map();

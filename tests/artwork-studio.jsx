@@ -6,7 +6,7 @@ async function run(){
  const root=createRoot(document.getElementById('root'));
  let generated=0,picked=null,external=0,signIns=0;
  const images=Array.from({length:3},(_,i)=>'data:image/png;base64,'+'A'.repeat(i+4));
- const props={prompt:'A moonlit dragon',onPrompt:()=>{},connected:true,signedIn:true,onGenerate:()=>generated++,onPick:image=>picked=image,onLocal:()=>external++,onSignIn:()=>signIns++};
+ const props={initialMode:'cloud',prompt:'A moonlit dragon',onPrompt:()=>{},connected:true,signedIn:true,onGenerate:()=>generated++,onPick:image=>picked=image,onLocal:()=>external++,onSignIn:()=>signIns++};
  const render=async extra=>{await act(async()=>root.render(<ArtworkStudio {...props} {...extra}/>))};
  const button=text=>[...document.querySelectorAll('button')].find(b=>b.textContent.trim()===text);
  try{

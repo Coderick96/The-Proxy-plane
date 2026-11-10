@@ -1,3 +1,5 @@
+**On-device artwork does not require the cloud setup below.** Browser-local generation is a separate mode with no account/AI-credit requirement; see [DEVICE_AI.md](DEVICE_AI.md). These account/database instructions still apply to cloud features.
+
 # The Proxy Plane 2.6.1 — private beta for 10 cardsmiths
 
 Current staging status: **Proxy plane** (`esndctzrbpoiljwenevp`) contains real

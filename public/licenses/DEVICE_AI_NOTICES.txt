@@ -1,0 +1,13 @@
+The Proxy Plane browser-local artwork model notices
+
+Model: DreamShaper 8 LCM, exported by skillsafeai.
+https://huggingface.co/skillsafeai/dreamshaper-8-lcm-onnx-webgpu/tree/a310400909a293a7a937a54854910ed06469192b
+Source model: Lykon/dreamshaper-8-lcm, revision 4645d8bc6a8e6b106d21606d63e8460cdad4f1a6.
+License: CreativeML OpenRAIL-M. See device-ai-openrail-m.txt for the complete license and use restrictions. The quantized files are downloaded by user consent; model weights are not bundled with this application. The original source license's conditions and use restrictions apply to use and outputs.
+
+CLIP tokenizer vocabulary/merges: OpenAI CLIP, MIT. See device-ai-clip-mit.txt.
+ONNX Runtime Web 1.27.0: Microsoft, MIT. See device-ai-onnxruntime-mit.txt.
+Hugging Face Tokenizers 0.2.0: Apache-2.0. See device-ai-tokenizers-apache.txt.
+hash-wasm 4.12.0: MIT. See device-ai-hash-wasm-mit.txt.
+
+Pinned model-file SHA-256 digests and lengths are recorded in src/deviceAiModel.js and verified incrementally before inference/cache. The tokenizer test fixtures duplicate the same small pinned tokenizer assets so regression tests do not depend on external downloads.

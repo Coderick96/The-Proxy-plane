@@ -1,3 +1,5 @@
+Browser-device AI: run `npm run test:device-ai` and `npm run test:device-ai-browser`. The browser harness explicitly mocks GPU inference for UI flows; its native capability probe is not an image-generation test. Genuine supported-device GPU and real iPhone verification remain required. See `docs/qa/device-ai/QA-MATRIX.md`.
+
 # Try this private-beta candidate
 
 Download the **feature/local-art-audit-homepage** branch (not main) and unzip into a new folder. Node.js 24 and npm are required. Do not copy an old environment file into this preview.

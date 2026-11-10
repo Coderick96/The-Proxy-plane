@@ -27,7 +27,8 @@
     "test:browser": "node tests/qa-mobile-print.mjs",
     "test:print-browser": "node tests/run-print-browser.mjs",
     "test:device-ai": "node tests/device-ai-downloads.mjs && node tests/device-ai-math.mjs && node tests/device-ai-tokenizer.mjs",
-    "test:device-ai-browser": "node tests/device-ai-browser.mjs"
+    "test:device-ai-browser": "node tests/device-ai-browser.mjs",
+    "test:device-ai-runtime": "node tests/device-ai-runtime-browser.mjs"
   },
   "dependencies": {
     "@huggingface/tokenizers": "0.2.0",

@@ -36,3 +36,8 @@ export function decodedPixels(values,width=512,height=512){
  }
  return pixels;
 }
+
+export async function deviceSeeds(operationId){
+ if(typeof operationId!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(operationId))throw new Error('A valid authorized request ID is required.');
+ const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(operationId.toLowerCase()));const view=new DataView(digest);return [view.getUint32(0,true),view.getUint32(4,true),view.getUint32(8,true)];
+}

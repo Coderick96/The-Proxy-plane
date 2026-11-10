@@ -1,0 +1,11 @@
+
+> the-proxy-plane@2.6.5 test:accounts-local
+> node tests/local-auth-rest.mjs
+
+PASS actual local GoTrue: two confirmed accounts, password sessions, user verification, invalid-token rejection and refresh.
+PASS actual local PostgREST + GoTrue JWTs: owner vault create/read, anonymous and cross-account read isolation, forged owner insert, reassignment, foreign update/delete denied.
+PASS actual local REST: service-only refill RPC denied to anonymous and both real user JWTs.
+PASS actual local private-beta REST gate: configured owner and admitted account can use their vaults; a real unapproved account cannot insert.
+PASS actual app HTTP → supabase-js → GoTrue/PostgREST → native SQL: eight duplicate device authorizations debit once; outsider/invalid auth denied; owner-only duplicate refill grants exactly 100 wallet credits.
+PASS actual timer-driven authenticated HTTP recovery: expired cloud reservation refunded once with generation paused; repeated ticks add no credit and another account remains unchanged. Hosted scheduler installation is not tested.
+LIMIT: Storage is a SQL interface fixture; no email delivery, OAuth provider, hosted service, real payment, GPU inference or physical-device claim.

@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import {createAIRecovery} from './aiRecovery.js';
+import {mountAIReconcile} from './aiReconcile.js';
 import {sendAIJson,aiReferenceLimit} from './aiTransport.js';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
@@ -28,6 +29,7 @@ export function createApp({env=process.env,services=createServices(env),fetcher=
  }));
  app.use(express.json({limit:'12mb'}));
  app.get('/api/health',(_req,res)=>res.json({ok:true,aiConfigured:Boolean(env.OPENAI_API_KEY),accountsConfigured:services.configured,billingConfigured:Boolean(testBillingAllowed(env)&&services.stripe&&env.STRIPE_WEBHOOK_SECRET)}));
+ mountAIReconcile(app,{env,services,recovery});
  mountBeta(app,{env,services,route});
  mountDeviceCredits(app,{env,services,route});
  mountDevCredits(app,{env,services,route});

@@ -104,3 +104,9 @@ Set `CLIENT_ORIGIN` to the exact hosted HTTPS origin and update Auth Site URL/re
 Run the available automated tests/build and record exact results. Then use [BETA_TEST_CHECKLIST.md](BETA_TEST_CHECKLIST.md) on physical mobile and desktop devices. Native Safari/AirPrint, PDF rendering and physical card dimensions require real-device/printer evidence: print at 100%/Actual Size on matching paper and measure 63.5 × 88.9 mm cards and the calibration ruler. Software geometry alone cannot certify a printer.
 
 Keep main and production unchanged until approval. Preserve card backups, immutable billing ledgers and historical balances. Roll back code through a reviewed prior artifact/revert; do not reset user data or drop tables. Disable AI, test billing and development refill flags to close those flows while investigating. A paid database branch is optional infrastructure, not a substitute for passing these gates.
+
+## Full service acceptance and cloud recovery
+
+`npm run test:supabase-stack` starts a uniquely named disposable local Supabase CLI3.1.0 project and tests real Storage HTTP permissions and Mailpit confirmation delivery. It automatically downloads its pinned CLI/service versions and requires sufficient Docker disk space; use the dedicated GitHub job when the local workspace is too small. It accepts no existing project or hosted URL, cleans up only its own project, and is not production setup. Passing local Mailpit does not prove delivery through your real SMTP provider or external Google/Apple callbacks.
+
+For cloud AI recovery on serverless, follow [AI_RECOVERY_SETUP.md](AI_RECOVERY_SETUP.md). A strong server-only `CRON_SECRET` protects the bounded reconciliation endpoint. Do not set `AI_RECOVERY_SCHEDULER_VERIFIED=true` until you have recorded actual scheduler execution against approved staging. Keep cloud AI paused until that operational check passes.

@@ -28,7 +28,7 @@ export function betaPreflight(env){
  check('stripe-test-only',!env.STRIPE_SECRET_KEY||/^(?:sk|rk)_test_/.test(env.STRIPE_SECRET_KEY),'Live or unrecognized Stripe keys are not allowed.');
  if(env.BETA_TEST_BILLING==='true')check('billing-setup',/^(?:sk|rk)_test_/.test(env.STRIPE_SECRET_KEY||'')&&Boolean(env.STRIPE_WEBHOOK_SECRET),'Test checkout needs test credentials and a verified webhook; delivery still needs integration testing.');
  if(env.DEV_CREDIT_TOPOFF_ENABLED==='true')check('owner-refill',Boolean(env.OWNER_TOPOFF_CODE&&env.VERCEL_ENV!=='production'&&!(env.NODE_ENV==='production'&&!env.VERCEL_ENV)),'Owner refills require a server-only code and development/Preview environment.');
- if(env.BETA_AI_ENABLED==='true'&&env.OPENAI_API_KEY&&env.SERVERLESS_MODE==='true')check('idle-ai-recovery',false,'Before enabling cloud AI on serverless, configure and verify authenticated scheduled reconciliation; the continuous-server timer does not run there.');
+ if(env.BETA_AI_ENABLED==='true'&&env.OPENAI_API_KEY&&env.SERVERLESS_MODE==='true')check('idle-ai-recovery',/^[\x21-\x7e]{32,512}$/.test(env.CRON_SECRET||'')&&env.AI_RECOVERY_SCHEDULER_VERIFIED==='true','Configure a strong server-only CRON_SECRET and record actual scheduler execution before setting AI_RECOVERY_SCHEDULER_VERIFIED=true. Offline checks cannot prove that schedule is running.');
  return {ok:checks.every(c=>c.status==='PASS'),checks};
 }
 

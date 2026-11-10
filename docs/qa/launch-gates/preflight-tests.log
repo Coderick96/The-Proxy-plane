@@ -1,0 +1,1 @@
+PASS offline beta setup checks: matching configured origins, beta gates, owner/config presence, browser secret boundary, test-only Stripe, refill production denial and serverless recovery gate. No network or credentials used.

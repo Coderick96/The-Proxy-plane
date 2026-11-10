@@ -1,14 +1,16 @@
-Browser-local artwork is now available in the feature preview: **AI Art Studio → On this device**. It runs on compatible browser GPUs without a desktop companion or OpenAI key. Both device and cloud artwork require one account credit per three-choice request; the credit backend must be configured. See [DEVICE_AI.md](DEVICE_AI.md) for download size, license, hardware limits and verification status. Existing cloud and desktop features remain optional.
-
-> Current repair candidate: authoritative **2.6.5 Local Art** source. See [verification, known blockers, and local run instructions](docs/qa/RELEASE-REVIEW.md). This branch is not deployed or approved for release. [Try the local test build](TESTING.md).
-
 # The Proxy Plane 2.6.5 — private-beta test candidate
 
-For the beta setup, start with **BETA_SETUP.md** and **BETA_TEST_CHECKLIST.md**.
-Windows launcher: START_PRIVATE_BETA.bat. Beta adds verified-email approval,
-10 tester slots plus the owner, private feedback and cost-off defaults.
-Run supabase/beta.sql last, after credits.sql. Existing core features and credit
-rules remain. This package is not an already-hosted beta URL.
+Current setup: [BETA_SETUP.md](BETA_SETUP.md). Copy the tracked, nonsecret [environment template](config/beta.env.example) to an untracked `.env` and provide credentials securely. The existing real-data Supabase project remains read-only; use an isolated local or explicitly approved hosted backend. No paid resource or production deployment is required to continue local verification.
+
+Current credit policy: 10 introductory credits once, 200 per verified paid Premium month, and one credit for three artwork choices in either device or cloud mode. Existing purchased wallets and historical grants are preserved. Owner development refills are optional, server-authorized and disabled in production.
+
+Browser-local artwork is available in the protected feature preview under **AI Art Studio → On this device**. It needs compatible WebGPU hardware and authenticated account-credit authorization, but no desktop companion or OpenAI key. See [DEVICE_AI.md](DEVICE_AI.md) for model download size, license and hardware limits. Full physical-device diffusion and hosted account/credit integration remain unverified; a preview URL is not launch certification.
+
+Use [the current runtime/credit QA matrix](docs/qa/runtime-credit-fix/QA-MATRIX.md) and [the beta acceptance checklist](BETA_TEST_CHECKLIST.md). The source remains on a separate feature branch; main and production have not been updated. Earlier audit evidence is retained in [the release review](docs/qa/RELEASE-REVIEW.md).
+
+## Historical release notes
+
+The sections below preserve prior release history. Older credit amounts, image counts, setup paths and readiness statements are superseded by the current policy and setup guide above.
 
 # The Proxy Plane 2.6 — Starter and monthly Premium credits
 

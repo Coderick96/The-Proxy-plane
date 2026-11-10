@@ -1,43 +1,61 @@
-Browser-device AI: run `npm run test:device-ai` and `npm run test:device-ai-browser`. The browser harness explicitly mocks GPU inference for UI flows; its native capability probe is not an image-generation test. Genuine supported-device GPU and real iPhone verification remain required. See `docs/qa/device-ai/QA-MATRIX.md`.
+# Test the private-beta candidate
 
-# Try this private-beta candidate
+Current work is on **feature/private-beta-launch-gates**, based on the runtime and credit fixes in [draft PR #8](https://github.com/Coderick96/The-Proxy-plane/pull/8). Use the launch-gates draft PR and its exact tested commit for review; do not use the old `feature/local-art-audit-homepage` branch or main. Main and production remain unchanged.
 
-Download the **feature/local-art-audit-homepage** branch (not main) and unzip into a new folder. Node.js 24 and npm are required. Do not copy an old environment file into this preview.
+Use Node.js 22 or later and npm. Extract into a fresh folder and export a card backup before testing. Do not copy credentials from the real-data backend into this candidate. Current environment/account instructions are in [BETA_SETUP.md](BETA_SETUP.md), using the tracked, nonsecret [environment template](config/beta.env.example).
 
-On Windows run `START_THE_PROXY_PLANE.bat`. On macOS/Linux, or manually on Windows:
+## Local editor preview without credentials
+
+Leave account/provider credentials unconfigured. On Windows, run `START_THE_PROXY_PLANE.bat`; alternatively use:
 
 ```sh
 npm ci
 npm start
 ```
 
-Open the local URL printed in the terminal, normally http://127.0.0.1:5173. Keep the terminal open while testing; Ctrl+C stops both editor and backend. This is a local preview, not a production deployment.
+Open the local URL printed in the terminal, normally `http://127.0.0.1:5173`. Keep the terminal open; Ctrl+C stops the editor and API. This is a local editor preview, not a configured private beta or production deployment. If `VITE_PRIVATE_BETA=true` is set, the private-beta account gate intentionally requires a configured isolated backend.
 
-## Ready to try without credentials
+Without credentials you can check:
 
-- Home navigation on phone-sized and desktop windows.
-- Search Scryfall, alternate printings and double-faced card selection (internet required).
-- Create/edit frames, text, symbols, layers and uploaded art; save on this browser; export a backup before experimenting.
-- Add/remove/edit the print queue; choose Letter/A4; export PDFs and test optional blank backs.
-- Print a calibration/test sheet at Actual Size/100%; match the selected paper. Measure card edges at 63.5 × 88.9 mm. This physical step has not been certified by automated tests.
+- Home actions, card catalog, set/color/rarity filters and price/mana sorting.
+- Scryfall search, alternate printings and double-faced selection (internet required).
+- Custom frames, text, symbols, layers, uploaded art, zoom and browser-local saves.
+- Print queue editing/removal, Letter/A4 settings, PDF exports and optional blank backs.
+- Card backup/export/import. Use a separate browser profile for isolated testing.
 
-The browser's existing device saves are preserved by account scope; a new browser/profile is useful for isolated testing. No test command should be pointed at the real Supabase database.
+No test or setup command should target the existing real-data Supabase project. Do not delete old folders or backups until your work is verified.
 
-## Features still gated
+## Account, credit and AI verification
 
-Cloud accounts, community synchronization, cloud AI and checkout need separately configured services. The connected Supabase project contains real data and is read-only for this mission. Its existing 15-credit constraint must not be changed without separate approval. Stripe's approved account is test-mode only; its catalog is verified but there is no webhook endpoint yet. No live payments are enabled.
+Use an isolated local Supabase stack or an explicitly approved isolated hosted backend. A complete local stack has not yet been verified in this environment. Running SQL fixtures alone does not establish Auth/REST/Storage behavior. Follow the SQL order and secure configuration in [BETA_SETUP.md](BETA_SETUP.md), then complete [the beta acceptance checklist](BETA_TEST_CHECKLIST.md).
 
-The new durable AI recovery setup lives in `supabase/ai_recovery.sql`; it has only been exercised locally. It must be reviewed/applied to an isolated test database before cloud AI is enabled. The UI lets authenticated users recover stored artwork choices or download card/review results without another generation charge. Metadata lists do not download every image. Keep beta AI paused until the deployment's recovery process and storage budget are validated.
+After securely completing the isolated backend `.env`, run `npm run beta:check`. Its expected result with the untouched empty template is **SETUP BLOCKED**. It is an offline configuration check: it does not contact the backend or providers, print credential values, migrate data or certify readiness. Even a configuration PASS still requires actual credentials, isolation and integration checks.
 
-Local Art Studio is a separate optional desktop companion; see `local-art-studio/README.md`. Its model/GPU generation has not been validated on this host. On iPhone, use artwork upload or a configured cloud service; desktop companion execution is not assumed.
+Both device and cloud artwork require authenticated one-credit authorization for three choices. Device computation runs in a browser Worker and requires no OpenAI key or desktop companion; see [DEVICE_AI.md](DEVICE_AI.md). Full diffusion on a compatible physical GPU/phone remains unverified. The available software GPU runtime check does not establish shader-f16 support, model memory fit or actual generated artwork. Unsupported devices can use uploads or an explicitly configured cloud mode.
 
-## Report a problem
+Cloud AI, email/provider sign-in, community synchronization and Stripe TEST-mode billing need real isolated integration checks before enabling them. Keep `BETA_AI_ENABLED=false` and `BETA_TEST_BILLING=false` until their acceptance gates pass. Serverless cloud AI also needs an idle-recovery scheduler. Owner refills require the optional reviewed SQL and server-only configuration; they do not use Stripe and are disabled in production. Never expose credentials or use a real payment card.
 
-Include the page/action, screen size or device/browser, visible error, and whether it repeats. Never send passwords, API keys or payment-card details. Screenshots and automated results are under `docs/qa/`; the release recommendation and remaining gates are in `docs/qa/RELEASE-REVIEW.md`.
+## Automated checks and what they prove
 
-## Try the layout on your iPhone over a trusted local Wi-Fi network
+```sh
+npm test
+npm run build
+npm run test:device-ai
+npm run test:device-ai-runtime
+npm run test:device-ai-browser
+npm run test:browser
+npm run test:print-browser
+```
 
-On the computer where you downloaded the source, use two terminals in the project folder:
+`npm test` includes SQL/PGlite, HTTP boundary and simulated UI regression checks. The runtime browser test reproduces the old WebGPU startup failure and executes a real weight-free ONNX Add graph with the corrected backend. The device UI browser test explicitly mocks model inference, GPU/account capabilities and credit responses. Neither is a full diffusion test. Browser mobile layouts are emulation, not native iPhone evidence.
+
+The launch-gates work adds `npm run test:postgres` for a disposable local native PostgreSQL concurrency test. It must use disposable local fixture data; it is not permission to connect to a remote or real-data database. Consult that command's actual output and prerequisites before claiming a pass. It does not replace full Supabase Auth, REST or Storage tests.
+
+Executed evidence from PR #8 is in [the runtime/credit QA matrix](docs/qa/runtime-credit-fix/QA-MATRIX.md). Historical baseline checks remain under `docs/qa/`; use the latest exact logs and commit when assessing results. A successful build, liveness endpoint or preview URL is not launch certification.
+
+## Physical phone and printer testing
+
+For layout/editor/upload/print testing on a trusted local Wi-Fi network, use two terminals:
 
 ```sh
 # Terminal 1
@@ -46,6 +64,12 @@ npm run server
 npm run dev -- --host 0.0.0.0
 ```
 
-Open Vite's printed Network URL on your iPhone on the same Wi-Fi. This makes a local development preview reachable on that network; it does not publish a production site. Leave cloud credentials unconfigured for this isolated test. The app uses secure random-byte UUID generation when the native randomUUID API requires HTTPS. Cloud OAuth still requires correctly configured secure redirect URLs.
+Open Vite's printed Network URL on the phone. Leave cloud credentials unconfigured for this local layout test. Do not expose the development port publicly. Ordinary HTTP LAN URLs do not supply the secure context needed for WebGPU or production OAuth; use a properly configured protected HTTPS preview for those flows.
 
-Try the home actions, an uploaded image in the editor, one-card PDF export, then Share → Print. Stop both terminals with Ctrl+C afterward. Please report device/browser and actual printer measurements; automated desktop emulation cannot supply those results.
+On an actual iPhone, test Safari navigation, touch controls, keyboard/focus, uploaded art, PDF download/rendering and Share → Print. Select matching paper and Actual Size/100%, disable fit/shrink and printer expansion, then measure card edges at **63.5 × 88.9 mm** and the **25.4 mm** calibration ruler. Record the device/browser, printer, driver, paper, scale and measurements. Browser geometry cannot certify a physical printer.
+
+## Report a result
+
+Use PASS, FAIL, BLOCKED or NOT TESTED, and include the exact commit, action, device/browser and evidence. For a failure, include repeatable steps and expected/actual behavior. Report through Beta desk when the isolated account backend is available. Never send passwords, API keys, refill codes, tokens or payment-card details. Keep main and production unchanged until approval.
+
+The optional `npm run test:accounts-local` runs real disposable GoTrue/PostgREST/PostgreSQL services and application account/credit endpoints. Pull the pinned images listed in BETA_SETUP first. Its storage helpers are fixtures; it does not verify Storage HTTP, email delivery, external OAuth, hosted credentials or physical devices.

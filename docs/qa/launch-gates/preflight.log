@@ -1,0 +1,13 @@
+
+> the-proxy-plane@2.6.5 beta:check
+> node scripts/beta-preflight.mjs
+
+BLOCKED private-beta: Enable both server and browser private-beta gates.
+BLOCKED account-url: Use the same isolated Supabase API origin on server and browser; HTTP is limited to loopback.
+BLOCKED public-key: Configure a public publishable/anon key, never a service-role key.
+BLOCKED server-key: Configure the server-only Supabase service credential securely.
+BLOCKED owner: Configure the confirmed owner Auth UUID.
+BLOCKED client-origin: Configure the exact browser origin (HTTPS when hosted).
+PASS browser-secret-boundary: Server secrets must never use a VITE_ environment name.
+PASS stripe-test-only: Live or unrecognized Stripe keys are not allowed.
+SETUP BLOCKED. See BETA_SETUP.md. No service was changed and no secret values were printed.

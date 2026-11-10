@@ -1,0 +1,106 @@
+{
+  "kind": "Independent review of root-executed browser logs plus independently executed PDF geometry inspection",
+  "browser_execution_by_this_reviewer": "NOT RUN: initial permission call stalled and was aborted",
+  "browser_log_review": {
+    "status": "PASS",
+    "viewport_widths": [
+      390,
+      768,
+      1440
+    ],
+    "flows": 18,
+    "axe_scans": 6,
+    "axe_violations": 0,
+    "page_errors": []
+  },
+  "pdf_geometry": [
+    {
+      "name": "imports.pdf",
+      "pages": 1,
+      "placements_mm": [
+        [
+          63.5,
+          88.9
+        ],
+        [
+          63.5,
+          88.9
+        ],
+        [
+          63.5,
+          88.9
+        ],
+        [
+          63.5,
+          88.9
+        ],
+        [
+          63.5,
+          88.9
+        ],
+        [
+          63.5,
+          88.9
+        ],
+        [
+          63.5,
+          88.9
+        ],
+        [
+          63.5,
+          88.9
+        ],
+        [
+          63.5,
+          88.9
+        ]
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "custom-fallback.pdf",
+      "pages": 1,
+      "placements_mm": [
+        [
+          63.5,
+          88.9
+        ],
+        [
+          63.5,
+          88.9
+        ],
+        [
+          63.5,
+          88.9
+        ],
+        [
+          63.5,
+          88.9
+        ],
+        [
+          63.5,
+          88.9
+        ],
+        [
+          63.5,
+          88.9
+        ],
+        [
+          63.5,
+          88.9
+        ],
+        [
+          63.5,
+          88.9
+        ],
+        [
+          63.5,
+          88.9
+        ]
+      ],
+      "status": "PASS"
+    }
+  ],
+  "physical_print_and_real_iPhone": "NOT TESTED",
+  "harness_gap": "tests/qa-mobile-print.mjs records axe violations and statusResponsive but does not assert them. Current recorded values are all passing, but future failures could still exit0."
+}

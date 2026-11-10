@@ -17,3 +17,7 @@ test-results/
 
 # Requested, sanitized verification evidence
 !docs/qa/**/*.log
+
+# Supabase CLI local state and generated credentials
+supabase/.temp/
+supabase/.branches/

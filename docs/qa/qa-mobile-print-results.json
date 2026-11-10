@@ -236,5 +236,5 @@
   ],
   "errors": [],
   "phase": "duplex both with explicit None backing",
-  "summary": "PASS browser layout/navigation/export assertions; inspect recorded axe violations separately"
+  "summary": "PASS browser layout/navigation/export, route overflow and all six accessibility assertions"
 }

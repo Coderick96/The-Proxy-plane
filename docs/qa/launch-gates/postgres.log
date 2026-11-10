@@ -1,0 +1,5 @@
+PASS native PostgreSQL: 16 independent connections, same operation produces one debit and matching receipts.
+PASS native PostgreSQL: 24 distinct concurrent requests cannot overspend 10 starter credits; failures roll back.
+PASS native PostgreSQL: cross-account operation collision stays private; 16 duplicate refills grant exactly 100 wallet credits.
+PASS native PostgreSQL: concurrent refunds restore once, refunded receipts cannot resume, unprivileged roles cannot call billing RPCs/read receipts.
+LIMIT: auth/storage are schema fixtures; real Supabase Auth/REST/Storage, payment delivery and physical GPU/device behavior remain unverified.

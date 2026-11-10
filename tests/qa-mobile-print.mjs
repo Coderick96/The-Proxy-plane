@@ -3,6 +3,7 @@ import {createRequire} from 'node:module';
 import {createServer} from 'vite';
 import {mkdir,writeFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
+import {assertBrowserAcceptance} from './browser-acceptance.mjs';
 const require=createRequire(import.meta.url);
 const {chromium}=require('playwright');
 const AxeBuilder=require('@axe-core/playwright').default;
@@ -101,8 +102,8 @@ try{
  results.flows.push({name:'prepared PDF invalidated after paper, custom dimensions, DPI, guide color, and duplex settings changes',status:'PASS'});
  const downloadPromise=page.waitForEvent('download');await page.getByRole('button',{name:'Export PDF',exact:true}).click();const download=await downloadPromise;assert.equal(download.suggestedFilename(),'the-proxy-plane-sheets.pdf');
  results.flows.push({name:'Export PDF downloads expected filename',status:'PASS'});
- assert.deepEqual(results.errors,[]);
- results.summary='PASS browser layout/navigation/export assertions; inspect recorded axe violations separately';
+ assertBrowserAcceptance(results);
+ results.summary='PASS browser layout/navigation/export, route overflow and all six accessibility assertions';
  console.log(JSON.stringify(results,null,2));
 } catch(error){results.failure={message:error.message,stack:error.stack};console.error(error);process.exitCode=1;}
 finally{await writeFile(new URL('../docs/qa/qa-mobile-print-results.json',import.meta.url),JSON.stringify(results,null,2)+'\n');await browser?.close();await server.close();}

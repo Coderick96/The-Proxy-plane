@@ -1,0 +1,5 @@
+
+> the-proxy-plane@2.6.5 test:device-ai-runtime
+> node tests/device-ai-runtime-browser.mjs
+
+PASS genuine ORT/WebGPU initialization regression: old JSEP reproduces reported webgpuInit failure; matched Asyncify executes ONNX Add =3.5 using a real software GPU backend. This is not diffusion/physical-GPU validation. [{"broken":true,"ok":false,"error":"no available backend found. ERR: [webgpu] TypeError: z(...).webgpuInit is not a function","gpuErrors":[]},{"broken":false,"ok":true,"expectedOutput":3.5,"adapter":"swiftshader"}]

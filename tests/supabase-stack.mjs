@@ -75,10 +75,13 @@ try{
  config=config.replace(/^project_id\s*=.*$/m,'project_id = "'+id+'"');
  const base=randomInt(35000,45000);
  config=section(config,'api',{port:base});config=section(config,'db',{port:base+1,shadow_port:base+2});
- const mailSection=config.includes('[mailpit]')?'mailpit':config.includes('[inbucket]')?'inbucket':null;assert(mailSection,'Generated CLI config has no supported mail service');
+ const mailSection=['local_smtp','mailpit','inbucket'].find(name=>config.includes('['+name+']'));assert(mailSection,'Generated CLI config has no supported mail service');
  config=section(config,mailSection,{port:base+3});config=section(config,'db.seed',{enabled:'false'});
  config=section(config,'auth.email',{enable_confirmations:'true'});config=section(config,'auth.rate_limit',{email_sent:20});
  await writeFile(path,config);
+ if(process.argv.includes('--prepare-only')){
+  console.log('PASS pinned CLI configuration prepared and all required sections found; no containers started.');
+ }else{
  // A custom Docker network makes unspecified published bindings loopback-only.
  await docker(['network','create','--label','app=proxy-plane-disposable-stack-qa','--opt','com.docker.network.bridge.host_binding_ipv4=127.0.0.1',network]);networkCreated=true;
  startAttempted=true;await cli(['--network-id',network,'start','--exclude',excluded]);
@@ -130,6 +133,7 @@ try{
  requireSuccess(await a.client.storage.from(bucket).remove([object]),'Owner artwork deletion');denied(await a.client.storage.from(bucket).download(object));
  console.log('PASS actual Storage HTTP: owner upload/read/update/upsert/list/signed download/delete; anonymous and cross-account read/sign/update/upload denied; foreign delete preserves artwork; public URL denied; signed URL expires; bucket remains private.');
  console.log('LIMIT: only this disposable local stack was verified. No hosted project, external email/OAuth, Stripe, GPU model or physical printer was exercised.');
+ }
 }catch(error){throw new Error(clean(error.message),{cause:undefined});}
 finally{
  const errors=[];

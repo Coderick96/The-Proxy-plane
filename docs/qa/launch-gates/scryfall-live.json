@@ -1,0 +1,30 @@
+[
+  {
+    "sort": "price-asc",
+    "status": "PASS",
+    "http": 200,
+    "returned": 12,
+    "checks": "actual set/color/rarity plus ordered non-null USD prices or mana values"
+  },
+  {
+    "sort": "price-desc",
+    "status": "PASS",
+    "http": 200,
+    "returned": 12,
+    "checks": "actual set/color/rarity plus ordered non-null USD prices or mana values"
+  },
+  {
+    "sort": "mana-asc",
+    "status": "PASS",
+    "http": 200,
+    "returned": 12,
+    "checks": "actual set/color/rarity plus ordered non-null USD prices or mana values"
+  },
+  {
+    "sort": "mana-desc",
+    "status": "PASS",
+    "http": 200,
+    "returned": 12,
+    "checks": "actual set/color/rarity plus ordered non-null USD prices or mana values"
+  }
+]

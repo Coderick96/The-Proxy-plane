@@ -1,0 +1,38 @@
+
+> the-proxy-plane@2.6.5 build
+> vite build
+
+vite v6.4.5 building for production...
+transforming...
+✓ 1947 modules transformed.
+rendering chunks...
+[plugin vite:reporter]
+(!) /workspace/proxy-plane-staging/node_modules/html-to-image/es/index.js is dynamically imported by /workspace/proxy-plane-staging/src/App.jsx but also statically imported by /workspace/proxy-plane-staging/src/KingdomVault.jsx, /workspace/proxy-plane-staging/src/printRaster.js, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                                 0.53 kB │ gzip:     0.33 kB
+dist/assets/ort-wasm-simd-threaded.asyncify-BUv3uAQk.mjs       47.51 kB
+dist/assets/mplantin-Dsk68a-x.woff                             49.72 kB
+dist/assets/mplantin-DGd3yikv.ttf                              69.63 kB
+dist/assets/mplantin-BPhtYcIe.eot                              69.85 kB
+dist/assets/deviceAi.worker-UPMVBD5e.js                       181.78 kB
+dist/assets/mplantin-D6SO6wSc.svg                             211.04 kB │ gzip:    54.90 kB
+dist/assets/mana-Dd7dj-GP.ttf                                 408.20 kB
+dist/assets/mana-Bx-kp8II.woff                                408.28 kB
+dist/assets/mana-nXJ1YO3J.eot                                 408.36 kB
+dist/assets/mana-CylcniHU.svg                               1,907.69 kB │ gzip:   768.71 kB
+dist/assets/ort-wasm-simd-threaded.asyncify-CvvOzbbq.wasm  24,254.95 kB │ gzip: 5,966.53 kB
+dist/assets/index-Dg7yezHq.css                                133.77 kB │ gzip:    29.15 kB
+dist/assets/aiReference-CAdEIKRE.js                             1.18 kB │ gzip:     0.66 kB
+dist/assets/printRaster-DKlWifdL.js                             2.75 kB │ gzip:     1.25 kB
+dist/assets/purify.es-CAi2OJFm.js                              30.47 kB │ gzip:    11.73 kB
+dist/assets/index.es-DXdqagbg.js                              159.77 kB │ gzip:    53.56 kB
+dist/assets/html2canvas.esm-QH1iLAAe.js                       202.38 kB │ gzip:    48.04 kB
+dist/assets/printPDF-BxesVBvs.js                              390.63 kB │ gzip:   128.76 kB
+dist/assets/index-BVnzE7Rb.js                                 643.31 kB │ gzip:   181.63 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 9.20s

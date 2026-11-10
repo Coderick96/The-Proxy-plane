@@ -112,8 +112,9 @@ try{
   }catch{res.writeHead(502).end('Local test gateway unavailable');}
  });
  await new Promise(resolve=>gateway.listen(0,'127.0.0.1',resolve));
- const ownerCode=randomBytes(24).toString('hex');
- const app=createApp({env:{SUPABASE_URL:'http://127.0.0.1:'+gateway.address().port,SUPABASE_SERVICE_ROLE_KEY:jwt('service_role'),BETA_MODE:'true',BETA_AI_ENABLED:'true',SERVERLESS_MODE:'true',OWNER_USER_ID:a.id,DEV_CREDIT_TOPOFF_ENABLED:'true',OWNER_TOPOFF_CODE:ownerCode,DEV_CREDIT_TOPOFF_AMOUNT:'100',NODE_ENV:'development'},fetcher:async()=>{throw new Error('Unexpected external provider request in local account test');}});
+ const ownerCode=randomBytes(24).toString('hex'),cronSecret=randomBytes(32).toString('hex');
+ const appEnv={SUPABASE_URL:'http://127.0.0.1:'+gateway.address().port,SUPABASE_SERVICE_ROLE_KEY:jwt('service_role'),BETA_MODE:'true',BETA_AI_ENABLED:'true',SERVERLESS_MODE:'true',OWNER_USER_ID:a.id,DEV_CREDIT_TOPOFF_ENABLED:'true',OWNER_TOPOFF_CODE:ownerCode,DEV_CREDIT_TOPOFF_AMOUNT:'100',NODE_ENV:'development',CRON_SECRET:cronSecret};
+ const app=createApp({env:appEnv,fetcher:async()=>{throw new Error('Unexpected external provider request in local account test');}});
  application=app.listen(0,'127.0.0.1');await new Promise(resolve=>application.on('listening',resolve));
  const appUrl='http://127.0.0.1:'+application.address().port;
  const chargeBody={operationId:randomUUID(),modelRevision:'a310400909a293a7a937a54854910ed06469192b',fingerprint:'a'.repeat(64)};
@@ -131,6 +132,22 @@ try{
  assert.equal(ownerAccess.status,200);assert.equal(ownerAccess.data.owner,true);assert.equal(ownerAccess.data.credits,109);
  assert.equal(otherAccess.status,200);assert.equal(otherAccess.data.owner,false);assert.equal(otherAccess.data.credits,10);
  console.log('PASS actual app HTTP → supabase-js → GoTrue/PostgREST → native SQL: eight duplicate device authorizations debit once; outsider/invalid auth denied; owner-only duplicate refill grants exactly 100 wallet credits.');
+ // A local timer invokes the same authenticated recovery HTTP endpoint a scheduler uses.
+ // This proves endpoint/database behavior, not installation of a hosted scheduler.
+ const expiredOperation=randomUUID();
+ await sql(`select pp_ai_reserve(${q(a.id)},${q(expiredOperation)},'art','local-idle-recovery',1);update pp_ai_operations set lease_until=now()-interval '1 minute' where operation=${q(expiredOperation)};`);
+ assert.equal(JSON.parse(await sql(`select pp_daily_status(${q(a.id)});`)).credits,108);
+ appEnv.BETA_AI_ENABLED='false';
+ assert.equal((await request(appUrl+'/api/internal/ai/reconcile')).status,401);
+ const ticks=[];let tickWork=Promise.resolve(),tickFailure;
+ const timer=setInterval(()=>{tickWork=tickWork.then(async()=>ticks.push(await request(appUrl+'/api/internal/ai/reconcile',{token:cronSecret}))).catch(error=>{tickFailure=error;});},100);
+ try{for(let i=0;i<100&&ticks.length<2&&!tickFailure;i++)await pause();}finally{clearInterval(timer);await tickWork;}
+ if(tickFailure)throw tickFailure;
+ assert(ticks.length>=2);assert(ticks.every(r=>r.status===200));assert.equal(ticks.reduce((sum,r)=>sum+r.data.reconciled,0),1);
+ assert.equal(JSON.parse(await sql(`select pp_daily_status(${q(a.id)});`)).credits,109);
+ assert.equal((await sql(`select state from pp_ai_operations where operation=${q(expiredOperation)};`)).trim(),'refunded');
+ assert.equal(JSON.parse(await sql(`select pp_daily_status(${q(b.id)});`)).credits,10);
+ console.log('PASS actual timer-driven authenticated HTTP recovery: expired cloud reservation refunded once with generation paused; repeated ticks add no credit and another account remains unchanged. Hosted scheduler installation is not tested.');
  console.log('LIMIT: Storage is a SQL interface fixture; no email delivery, OAuth provider, hosted service, real payment, GPU inference or physical-device claim.');
 }catch(error){
  const redact=text=>text.replaceAll(secret,'[local secret]').replaceAll(password,'[local password]').replace(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g,'[token]');

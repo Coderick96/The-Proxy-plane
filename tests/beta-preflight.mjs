@@ -8,4 +8,6 @@ assert(!betaPreflight({...base,VITE_SUPABASE_ANON_KEY:jwt}).ok);
 assert(betaPreflight({...base,STRIPE_SECRET_KEY:'rk_test_fixture',STRIPE_WEBHOOK_SECRET:'fixture',BETA_TEST_BILLING:'true'}).ok);
 assert(betaPreflight({...base,DEV_CREDIT_TOPOFF_ENABLED:'true',OWNER_TOPOFF_CODE:'fixture',NODE_ENV:'production',VERCEL_ENV:'preview'}).ok);
 const serialized=JSON.stringify(betaPreflight({...base,VITE_OPENAI_API_KEY:'never-print-this-value'}));assert(!serialized.includes('never-print-this-value'));
+assert(!betaPreflight({...base,BETA_AI_ENABLED:'true',OPENAI_API_KEY:'fixture',SERVERLESS_MODE:'true',CRON_SECRET:'short',AI_RECOVERY_SCHEDULER_VERIFIED:'true'}).ok);
+assert(betaPreflight({...base,BETA_AI_ENABLED:'true',OPENAI_API_KEY:'fixture',SERVERLESS_MODE:'true',CRON_SECRET:'r'.repeat(64),AI_RECOVERY_SCHEDULER_VERIFIED:'true'}).ok);
 console.log('PASS offline beta setup checks: matching configured origins, beta gates, owner/config presence, browser secret boundary, test-only Stripe, refill production denial and serverless recovery gate. No network or credentials used.');

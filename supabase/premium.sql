@@ -12,7 +12,7 @@ create or replace function public.pp_has_feature(owner uuid,wanted text) returns
  select exists(select 1 from public.pp_grants g where g.user_id=owner and g.active and (g.expires_at is null or g.expires_at>now()) and (g.feature='premium' or g.feature=wanted or (g.feature='studio' and wanted in('studio','pack_celestial','pack_gothic','pack_dragon'))));
 $$;
 create or replace function public.pp_usage_bytes(owner uuid) returns bigint language sql volatile security definer set search_path='' as $$
- select coalesce((select sum(octet_length(project_json::text)) from public.proxy_kingdom_projects where user_id=owner),0)+coalesce((select sum(octet_length(project_json::text)) from public.pp_versions where user_id=owner),0)+coalesce((select sum(octet_length(style::text)) from public.pp_templates where user_id=owner),0)+coalesce((select sum(coalesce((metadata->>'size')::bigint,0)) from storage.objects where bucket_id in('proxy-kingdom-art','proxy-kingdom-community') and split_part(name,'/',1)=owner::text),0);
+ select coalesce((select sum(octet_length(project_json::text)) from public.proxy_kingdom_projects where user_id=$1),0)+coalesce((select sum(octet_length(project_json::text)) from public.pp_versions where user_id=$1),0)+coalesce((select sum(octet_length(style::text)) from public.pp_templates where user_id=$1),0)+coalesce((select sum(coalesce((metadata->>'size')::bigint,0)) from storage.objects where bucket_id in('proxy-kingdom-art','proxy-kingdom-community') and split_part(name,'/',1)=$1::text),0);
 $$;
 create or replace function public.pp_access_for(owner uuid) returns jsonb language sql stable security definer set search_path='' as $$
  select jsonb_build_object('studioPassOwned',exists(select 1 from public.pp_grants where user_id=owner and feature='studio' and active and expires_at is null),'ownedPacks',coalesce((select jsonb_agg(x) from unnest(array['celestial','gothic','dragon']) x where exists(select 1 from public.pp_grants g where g.user_id=owner and g.active and g.expires_at is null and g.feature in('studio','pack_'||x))),'[]'::jsonb),'premium',public.pp_has_feature(owner,'premium'),'studio',public.pp_has_feature(owner,'studio'),'packs',coalesce((select jsonb_agg(x) from unnest(array['celestial','gothic','dragon']) x where public.pp_has_feature(owner,'pack_'||x)),'[]'::jsonb),'storageUsedBytes',public.pp_usage_bytes(owner),'cardsUsed',(select count(*) from public.proxy_kingdom_projects where user_id=owner),'credits',coalesce((select sum(amount) from public.pp_credits where user_id=owner),0),'cardLimit',case when public.pp_has_feature(owner,'premium') then 10000 else 1000 end,'storageBytes',case when public.pp_has_feature(owner,'premium') then 1073741824 else 104857600 end);
@@ -102,14 +102,14 @@ drop trigger if exists pp_profile_guard on public.pk_profiles;
 create trigger pp_profile_guard before insert or update on public.pk_profiles for each row execute function public.pp_profile_guard();
 -- Artwork quota is enforced on Storage object metadata, with per-account serialization.
 create or replace function public.pp_storage_fits(bucket text,object_name text,object_meta jsonb) returns boolean language plpgsql security definer set search_path='' as $$
-declare owner uuid;used bigint;maximum bigint;begin
- owner:=(select auth.uid());if owner is null then return false;end if;
+declare v_owner uuid;used bigint;maximum bigint;begin
+ v_owner:=(select auth.uid());if v_owner is null then return false;end if;
  if bucket not in('proxy-kingdom-art','proxy-kingdom-community') then return false;end if;
- if split_part(object_name,'/',1)<>owner::text then return false;end if;
- perform 1 from auth.users where id=owner for update;
- maximum:=case when public.pp_has_feature(owner,'premium') then 1073741824 else 104857600 end;
- select coalesce(sum(coalesce((o.metadata->>'size')::bigint,0)),0) into used from storage.objects o where o.bucket_id in('proxy-kingdom-art','proxy-kingdom-community') and split_part(o.name,'/',1)=owner::text and not(o.bucket_id=bucket and o.name=object_name);
- return public.pp_usage_bytes(owner)-coalesce((select coalesce((metadata->>'size')::bigint,0) from storage.objects where bucket_id=bucket and name=object_name),0)+coalesce((object_meta->>'size')::bigint,0)<=maximum;
+ if split_part(object_name,'/',1)<>v_owner::text then return false;end if;
+ perform 1 from auth.users where id=v_owner for update;
+ maximum:=case when public.pp_has_feature(v_owner,'premium') then 1073741824 else 104857600 end;
+ select coalesce(sum(coalesce((o.metadata->>'size')::bigint,0)),0) into used from storage.objects o where o.bucket_id in('proxy-kingdom-art','proxy-kingdom-community') and split_part(o.name,'/',1)=v_owner::text and not(o.bucket_id=bucket and o.name=object_name);
+ return public.pp_usage_bytes(v_owner)-coalesce((select coalesce((metadata->>'size')::bigint,0) from storage.objects where bucket_id=bucket and name=object_name),0)+coalesce((object_meta->>'size')::bigint,0)<=maximum;
 end;$$;
 -- Restrictive policies preserve existing owner folder rules and apply to both buckets.
 drop policy if exists pp_storage_insert_quota on storage.objects;

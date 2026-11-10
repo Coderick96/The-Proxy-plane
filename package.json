@@ -31,7 +31,8 @@
     "test:device-ai-runtime": "node tests/device-ai-runtime-browser.mjs",
     "test:postgres": "node tests/postgres-concurrency.mjs",
     "beta:check": "node scripts/beta-preflight.mjs",
-    "test:accounts-local": "node tests/local-auth-rest.mjs"
+    "test:accounts-local": "node tests/local-auth-rest.mjs",
+    "test:supabase-stack": "node tests/supabase-stack.mjs"
   },
   "dependencies": {
     "@huggingface/tokenizers": "0.2.0",

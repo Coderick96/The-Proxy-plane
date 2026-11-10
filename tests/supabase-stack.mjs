@@ -75,7 +75,8 @@ try{
  config=config.replace(/^project_id\s*=.*$/m,'project_id = "'+id+'"');
  const base=randomInt(35000,45000);
  config=section(config,'api',{port:base});config=section(config,'db',{port:base+1,shadow_port:base+2});
- config=section(config,'mailpit',{port:base+3});config=section(config,'db.seed',{enabled:'false'});
+ const mailSection=config.includes('[mailpit]')?'mailpit':config.includes('[inbucket]')?'inbucket':null;assert(mailSection,'Generated CLI config has no supported mail service');
+ config=section(config,mailSection,{port:base+3});config=section(config,'db.seed',{enabled:'false'});
  config=section(config,'auth.email',{enable_confirmations:'true'});config=section(config,'auth.rate_limit',{email_sent:20});
  await writeFile(path,config);
  // A custom Docker network makes unspecified published bindings loopback-only.

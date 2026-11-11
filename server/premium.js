@@ -25,7 +25,7 @@ export function createServices(env=process.env,overrides={}){
  async function ownerFor(customerId){const {data,error}=await requireAdmin().from('pp_customers').select('user_id').eq('stripe_id',customerId).maybeSingle();if(error)throw error;return data?.user_id;}
  async function subscription(id){const sub=await stripe.subscriptions.retrieve(id);const uid=await ownerFor(typeof sub.customer==='string'?sub.customer:sub.customer.id);if(!uid)return;const known=catalog(env).find(p=>p.id==='premium_monthly');const item=sub.items.data.find(i=>i.price.id===known.price);const end=item?.current_period_end||sub.current_period_end;await rpc('pp_sync_subscription',{owner:uid,source_id:sub.id,enabled:Boolean(item&&['active','trialing'].includes(sub.status)),expires:end?new Date(end*1000).toISOString():new Date().toISOString()});const {data:hold,error:holdError}=await admin.from('pp_subscription_holds').select('source').eq('source',sub.id).maybeSingle();if(holdError)throw holdError;return {sub,uid,item,blocked:Boolean(hold)};}
  async function paidSession(id){const session=await stripe.checkout.sessions.retrieve(id,{expand:['line_items']});if(session.mode==='subscription'){if(session.subscription)await subscription(session.subscription);return;}
-  if(session.payment_status!=='paid')return;const uid=await ownerFor(session.customer);if(!uid||session.client_reference_id!==uid)throw new Error('Checkout account mismatch.');
+  if(session.payment_status!=='paid')return;const uid=await ownerFor(typeof session.customer==='string'?session.customer:session.customer?.id);if(!uid)return;if(session.client_reference_id!==uid)throw new Error('Checkout account mismatch.');
   const lines=session.line_items?.data||[];if(lines.length!==1||lines[0].quantity!==1)throw new Error('Unexpected checkout contents.');const product=(await products()).find(p=>p.kind==='payment'&&p.price===lines[0].price?.id);if(!product)throw new Error('Unknown checkout price.');
   if(session.payment_intent){const intent=await stripe.paymentIntents.retrieve(session.payment_intent,{expand:['latest_charge']});const charge=intent.latest_charge;if(charge&&typeof charge!=='string'&&(charge.refunded||charge.amount_refunded>0||charge.disputed))return;}
   await rpc('pp_apply_purchase',{owner:uid,receipt:session.id,sku:product.id});
@@ -36,6 +36,9 @@ export function createServices(env=process.env,overrides={}){
   else if(event.type==='invoice.paid'){
    const inv=await stripe.invoices.retrieve(object.id);const id=inv.subscription||inv.parent?.subscription_details?.subscription;if(!id)return;
    const result=await subscription(typeof id==='string'?id:id.id);
+   // Other applications may share the approved Stripe test account. Ignore their
+   // invoices before comparing ownership; mapped customers still require a match.
+   if(!result?.uid)return;
    if((typeof inv.customer==='string'?inv.customer:inv.customer?.id)!==(typeof result?.sub?.customer==='string'?result.sub.customer:result?.sub?.customer?.id))throw new Error('Invoice customer mismatch.');
    if(!result?.uid||result.blocked||!result.item||result.sub.status!=='active'||inv.status!=='paid'||inv.amount_paid<=0||!['subscription_create','subscription_cycle'].includes(inv.billing_reason))return;
    if(result.item.price.recurring?.interval!=='month'||result.item.price.recurring?.interval_count!==1)return;

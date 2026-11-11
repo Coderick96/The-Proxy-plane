@@ -1,8 +1,10 @@
-# The Proxy Plane 2.6 — Premium setup
+# The Proxy Plane 2.6.5 — Premium setup
 
-The feature code and original design packs are included. No merchant account,
-Supabase project, live products, paid AI requests or public deployment were created.
-Prices are deliberately unset; the shop displays unavailable products until configured.
+This source supports test-mode billing only. The protected hosted beta has an
+approved Supabase connection; Stripe products, secrets and webhook delivery must
+be verified for each Preview before purchases are enabled. No live payments or
+production promotion are part of this setup. See docs/qa/hosted-activation/RESULTS.md
+for the latest executed verification and remaining gates.
 
 ## 1. Run the app
 
@@ -14,7 +16,8 @@ folders or backups until you have verified your work in the new version.
 
 The free editor, normal PNG/PDF exports, private device saves and standard back
 work without paid services. Cloud/community need Supabase. AI requests need a
-signed-in account, server OpenAI key and credits. No browser Premium toggle grants access.
+signed-in account and credits. Cloud generation also needs a server OpenAI key;
+device generation uses supported WebGPU hardware without a paid provider call. No browser Premium toggle grants access.
 
 ## 2. Supabase
 
@@ -30,7 +33,7 @@ Run these SQL files in order in the project's SQL Editor:
 For 2.5.x, run credits.sql only. For an existing 2.3 database, run evolution.sql then credits.sql. For 2.1 run premium.sql then evolution.sql. Both are repeatable. Existing
 cards default to free access; no saved work is deleted on upgrade or downgrade.
 
-Copy .env.example to .env. Set the SAME project URL in SUPABASE_URL and
+Copy config/beta.env.example to an ignored .env file. Set the SAME project URL in SUPABASE_URL and
 VITE_SUPABASE_URL. Set its public browser key in VITE_SUPABASE_ANON_KEY and its
 server service-role key in SUPABASE_SERVICE_ROLE_KEY. The service key bypasses
 RLS: keep it on the server, never in a VITE_ variable, screenshot or committed file.
@@ -38,21 +41,21 @@ Restart after editing .env.
 
 ## 3. Choose your products and prices in Stripe test mode
 
-This build offers these specific products. The numbers below are configured
-feature limits, not prices. Choose prices only after considering AI, storage,
-transaction fees and your support costs.
+This build offers these specific products. The backend validates the currently published USD offers: Premium $14.99/month,
+10 credits $2.99, 30 credits $6.99 and 80 credits $14.99. Other permanent packs
+remain unavailable until their distinct test prices and fulfillment are verified.
 
 | Product | Billing | Included |
 | --- | --- | --- |
 | Premium membership | Monthly recurring | Studio tools, all current packs, 10,000 cloud cards, 1 GiB total managed storage, 200 credits per paid month; three image choices/re-sketch for one credit per request, eligible member deck lines |
-| Studio Pass | One-time | Templates, batch styling, local/cloud history, profile themes/showcases, advanced printing, custom back uploads and the three launch backing packs; standard cloud limits and 15 one-time starter AI credits |
+| Studio Pass | One-time | Templates, batch styling, local/cloud history, profile themes/showcases, advanced printing, custom back uploads and the three launch backing packs; standard cloud limits; the account receives 10 introductory credits once, not another allowance per purchase |
 | Celestial Atlas | One-time | Astral + Eclipse backs backs only |
 | Midnight Cathedral | One-time | Cathedral + Rose backs backs only |
 | Dragon Sovereign | One-time | Ember + Jade backs backs only |
-| 100 AI credits | One-time | Extra purchased balance for active Premium members; retained after cancellation |
+| 10 / 30 / 80 AI credits | One-time | Purchased credits available without Premium; unused purchased credits persist after cancellation |
 
 Create a separate Stripe Product/Price for each row. Use a monthly recurring
-price only for membership; the other five prices are one-time. Use USD for this
+price only for membership; all other prices are one-time. Use USD for this
 launch configuration. Copy each price_ ID into the matching STRIPE_PRICE_* field.
 Do not reuse a Price ID across products. Set the Stripe TEST secret key in
 STRIPE_SECRET_KEY. Configure the Stripe customer portal to permit subscription
@@ -60,7 +63,8 @@ cancellation. No tax configuration is automated here; configure merchant tax,
 receipt, refund and required business policies in Stripe before going live.
 
 A subscription's pack access ends with membership. Separately purchased packs
-and Studio Pass remain unlocked after membership ends. AI credits carry forward.
+and Studio Pass remain unlocked after membership ends. Purchased and unused starter
+credits carry forward; the Premium monthly allowance expires at the end of its paid period.
 After downgrade, existing cards/history remain readable; new cloud saves above
 the lower card/storage quota are blocked, while non-growing edits stay permitted.
 History is capped at 20 earlier saves per card; creating a new cloud revision pauses if storage is full so non-growing edits can still save. Larger storage counts managed
@@ -69,7 +73,9 @@ it does not measure unrelated buckets or Stripe data.
 
 ## 4. Connect verified webhooks
 
-Register /api/billing/webhook with Stripe. For local testing, install the Stripe
+Register /api/billing/webhook with Stripe in TEST mode. A protected Preview needs
+a narrowly scoped delivery path that Stripe can reach; a browser share cookie
+is not webhook access. Verify real delivery and retries before enabling purchases. For local testing, install the Stripe
 CLI from Stripe's official website, authenticate in test mode, then run:
 
     stripe listen --forward-to http://127.0.0.1:8787/api/billing/webhook
@@ -118,7 +124,8 @@ membership or credits. To test AI, optionally issue a deliberate credit grant:
 
     select public.pp_credit_grant('YOUR_AUTH_USER_UUID','owner-ai-test',20);
 
-Actual generation calls use your server OpenAI account and incur its API costs.
+Cloud generation calls use your server OpenAI account and incur its API costs.
+Browser-local device generation uses the visitor's GPU; the app still debits one credit.
 No keys or credits were supplied with this ZIP. To revoke owner preview, set
 active=false on the grant row in the SQL Editor, then refresh access. Never add
 an authenticated-user policy allowing clients to edit grants or credits.
@@ -126,12 +133,14 @@ an authenticated-user policy allowing clients to edit grants or credits.
 ## 6. OpenAI and AI behavior
 
 Set OPENAI_API_KEY on the server. The optional model fields are configurable.
-Credits: artwork request = 1; Free receives one image, Premium / Studio Pass
-receives three choices for that one credit, then selects one. Reference re-sketch
+Credits: artwork request = 1 for three choices on both Free and Premium;
+choose one to apply. Reference re-sketch requires Premium or Studio Pass and
 also returns three choices for one credit. Card = 1 (sets contain 1–10 cards); review = 1.
-There is one in-flight generation per account per server process. Credits are
+Cloud artwork recovery uses persistent operations with a bounded lease and
+idempotent debit/refund accounting; a hosted recovery scheduler must be verified
+before enabling serverless cloud generation. See AI_RECOVERY_SETUP.md. Credits are
 reserved atomically before contacting OpenAI and returned on provider/validation
-failure. Accounts receive 15 starter credits once. Premium receives 200 per paid
+failure. Accounts receive 10 introductory credits once. Premium receives 200 per paid
 monthly period, without rollover. Spend order: expiring monthly allowance,
 non-expiring starter, then purchased credits. Older wallet balances remain.
 See CREDITS_SETUP.md for migration and verified-invoice fulfillment.
@@ -144,10 +153,10 @@ identical recurring characters across images. Rules/balance feedback is a
 suggestion, not authoritative validation or a guarantee of play quality.
 
 Successful requests consume credits even if the browser closes before reading
-the response. A server crash between an upstream result and a refund is an
-operational reconciliation case; the credit ledger retains spend references.
-This starter does not include a persistent generation-job queue. Do not run it
-at public scale until you have monitored real costs and operational recovery.
+the response. Cloud artwork operations persist selected/recoverable results; expired
+cloud leases reconcile idempotently. Device generation uses a server-authorized
+receipt but cannot safely grant automatic refunds based on untrusted client errors.
+Do not run at public scale until real device performance and recovery are validated.
 
 ## 7. Where to use the features
 
@@ -204,9 +213,10 @@ Included verification:
 
 Checks cover simulated React workflows, database RLS/privacy/quotas, paid access,
 credit accounting, purchase idempotency, server routes, signed webhooks with mock
-providers, bleed geometry and cloud pagination beyond 1,000 cards. Native-browser
-visual QA, real Supabase Auth/Storage, live OpenAI, real Stripe test checkout and
-physical duplex print verification remain to be performed in your environment.
+providers, bleed geometry and cloud pagination beyond 1,000 cards. Browser checks and real local Supabase Auth/Storage/email services are also covered
+by CI. These are not proof of live provider OAuth, external email delivery, full
+GPU generation, real Stripe test checkout/webhook delivery or physical print accuracy.
+Consult the current verification report for which hosted checks actually ran.
 
 Primary integration references:
 - https://docs.stripe.com/checkout/fulfillment

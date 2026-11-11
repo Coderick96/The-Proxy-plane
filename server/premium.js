@@ -1,5 +1,6 @@
 import {createClient} from '@supabase/supabase-js';
 import Stripe from 'stripe';
+import {serverAccountKey} from './accountConfig.js';
 import {PACKS,FREE_ACCESS} from '../src/premiumCatalog.js';
 // This candidate is test-only even when BETA_MODE is omitted. Never construct a live client.
 export const isTestStripeKey=key=>typeof key==='string'&&/^(?:sk|rk)_test_[A-Za-z0-9]+$/.test(key);
@@ -11,8 +12,8 @@ export function catalog(env){return [
  ...[10,30,80].map(n=>({id:'credits_'+n,name:n+' AI credits',kind:'payment',price:env['STRIPE_PRICE_CREDITS_'+n],description:'One-time AI credit pack. Available without Premium; purchased credits carry forward.'}))
  ];}
 export function createServices(env=process.env,overrides={}){
- const configured=Boolean(env.SUPABASE_URL&&env.SUPABASE_SERVICE_ROLE_KEY);
- const admin=overrides.admin||(configured?createClient(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}}):null);
+ const accountKey=serverAccountKey(env),configured=Boolean(env.SUPABASE_URL&&accountKey);
+ const admin=overrides.admin||(configured?createClient(env.SUPABASE_URL,accountKey,{auth:{persistSession:false,autoRefreshToken:false}}):null);
  const stripe=overrides.stripe||(isTestStripeKey(env.STRIPE_SECRET_KEY)?new Stripe(env.STRIPE_SECRET_KEY):null);
  const requireAdmin=()=>{if(!admin)throw Object.assign(new Error('Server account setup is incomplete. See PREMIUM_SETUP.md.'),{status:503});return admin};
  const rpc=async(name,args)=>{const {data,error}=await requireAdmin().rpc(name,args);if(error)throw error;return data};

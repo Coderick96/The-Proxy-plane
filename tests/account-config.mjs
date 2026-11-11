@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {serverAccountKey} from '../server/accountConfig.js';
+import {createServices} from '../server/premium.js';
+const token=role=>'eyJhbGciOiJIUzI1NiJ9.'+Buffer.from(JSON.stringify({role})).toString('base64url')+'.fixture';
+const service=token('service_role');
+assert.equal(serverAccountKey({SUPABASE_SERVICE_ROLE_KEY:'canonical-fixture',supabase:service}),'canonical-fixture');
+assert.equal(serverAccountKey({supabase:service}),service);
+assert.equal(serverAccountKey({supabase:'sb_secret_fixture'}),'sb_secret_fixture');
+for(const value of [undefined,null,{},'',token('anon'),token('authenticated'),'sb_publishable_fixture','invalid',JSON.stringify({key:service})])assert.equal(serverAccountKey({supabase:value}),undefined);
+const env={SUPABASE_URL:'http://127.0.0.1:54321',supabase:service};
+assert.equal(createServices(env,{admin:{}}).configured,true);
+assert.equal(createServices({...env,supabase:token('anon')},{admin:{}}).configured,false);
+assert.equal(env.SUPABASE_SERVICE_ROLE_KEY,undefined,'Resolver must not mutate configuration');
+console.log('PASS server account configuration: canonical precedence, private legacy service-key compatibility, public/malformed legacy rejection and no configuration mutation. No credential/network used.');

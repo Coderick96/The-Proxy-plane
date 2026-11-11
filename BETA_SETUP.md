@@ -114,3 +114,9 @@ For cloud AI recovery on serverless, follow [AI_RECOVERY_SETUP.md](AI_RECOVERY_S
 ### Storage schema compatibility repair
 
 Fresh `premium.sql` includes the Storage owner-column fix. For an existing **approved isolated** database that has the older quota functions, review and apply only `supabase/storage_quota_compat.sql`; do not replay the entire baseline to repair them. It replaces two functions atomically without changing rows/tables and preserves beta gallery guards. The existing real-data projects remain read-only; this patch has not been applied there.
+
+### Existing Vercel credential compatibility
+
+Prefer `SUPABASE_SERVICE_ROLE_KEY`. For the existing server-only `supabase` secret, the backend accepts only a private service-role key format; public/anon/malformed values remain disconnected. This is a configuration filter, not token validation: Supabase authenticates every actual request. Never prefix this secret with VITE_. The preflight checker recognizes the same private alias.
+
+Set `VITE_GOOGLE_AUTH_ENABLED` and `VITE_APPLE_AUTH_ENABLED` to match the actual Supabase provider configuration. Unavailable options remain disabled. Set `VITE_CLOUD_ART_ENABLED=false` while the cloud key/recovery operation is unverified; users can still recover historical choices and use supported on-device generation or uploads. These browser flags require a rebuild.

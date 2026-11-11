@@ -1,8 +1,8 @@
-# The Proxy Plane 2.6.5 — isolated private-beta setup
+# The Proxy Plane 2.6.5 — private-beta setup
 
 This is a test candidate, not a launch certification. Start with this guide for current setup; older release notes describe historical behavior. Current evidence and remaining gates are in [current launch-gate QA](docs/qa/launch-gates/QA-MATRIX.md) and [the acceptance checklist](BETA_TEST_CHECKLIST.md).
 
-The existing hosted **Proxy plane** project contains real user data and is **read-only** for this work. Do not run setup, fixture users, migrations or refill tests against it. Use a disposable local Supabase stack or an explicitly approved isolated hosted project/branch. Local testing does not require buying a hosted branch. The connected account's free-project quota is exhausted; no paid resource should be created without cost agreement.
+The user explicitly approved the reviewed existing-backend upgrade and protected Preview connection. The upgrade was applied with all25 preexisting table fingerprints preserved. Do not replay baseline setup, reset this database or insert regression fixtures into real accounts. Use disposable local/CI services for mutation-based tests. The approved shared backend now runs the bounded SQL recovery scheduler; Preview-only feature settings leave production AI and billing disabled. No paid branch/plan was created. See [latest activation evidence](docs/qa/hosted-activation/RESULTS.md) for the exact code, deployment and remaining external/device gates.
 
 ## 1. Prepare the source and environment
 
@@ -113,10 +113,17 @@ For cloud AI recovery on serverless, follow [AI_RECOVERY_SETUP.md](AI_RECOVERY_S
 
 ### Storage schema compatibility repair
 
-Fresh `premium.sql` includes the Storage owner-column fix. For an existing **approved isolated** database that has the older quota functions, review and apply only `supabase/storage_quota_compat.sql`; do not replay the entire baseline to repair them. It replaces two functions atomically without changing rows/tables and preserves beta gallery guards. The existing real-data projects remain read-only; this patch has not been applied there.
+Fresh `premium.sql` includes the Storage owner-column fix. For an existing **approved isolated** database that has the older quota functions, review and apply only `supabase/storage_quota_compat.sql`; do not replay the entire baseline to repair them. It replaces two functions atomically without changing rows/tables and preserves beta gallery guards. The reviewed focused repair was applied to the explicitly approved Proxy plane backend; all preexisting row fingerprints were preserved. Do not replay unrelated baseline SQL. Other projects remain outside this task.
 
 ### Existing Vercel credential compatibility
 
 Prefer `SUPABASE_SERVICE_ROLE_KEY`. For the existing server-only `supabase` secret, the backend accepts only a private service-role key format; public/anon/malformed values remain disconnected. This is a configuration filter, not token validation: Supabase authenticates every actual request. Never prefix this secret with VITE_. The preflight checker recognizes the same private alias.
 
 Set `VITE_GOOGLE_AUTH_ENABLED` and `VITE_APPLE_AUTH_ENABLED` to match the actual Supabase provider configuration. Unavailable options remain disabled. Set `VITE_CLOUD_ART_ENABLED=false` while the cloud key/recovery operation is unverified; users can still recover historical choices and use supported on-device generation or uploads. These browser flags require a rebuild.
+
+
+### Hosted TEST billing and redirects
+
+The approved Manafiquetcg account has verified TEST prices and a signed webhook; Preview test billing is enabled while production remains disabled. A dedicated automation bypass permits Stripe to reach only the configured protected URL; never publish its query token or signing secret. When deploying a new Preview, update the test webhook destination to that exact immutable host and verify signature handling again. Revoke the dedicated bypass and disable the test endpoint if retiring the beta.
+
+Preview checkout and portal return destinations use hosting-supplied VERCEL_URL, never user-controlled request headers; production/local CLIENT_ORIGIN behavior is preserved. The test portal permits cancellation at the paid period end. No live payment is enabled. Authenticated test checkout through to credits still needs owner/tester acceptance; probe delivery is not purchase fulfillment evidence.

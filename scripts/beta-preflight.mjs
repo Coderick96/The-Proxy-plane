@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import {pathToFileURL} from 'node:url';
+import {serverAccountKey} from '../server/accountConfig.js';
 
 // Offline configuration checks only: no network requests, migrations, purchases or secret output.
 export function betaPreflight(env){
@@ -19,7 +20,7 @@ export function betaPreflight(env){
  const publicKey=env.VITE_SUPABASE_ANON_KEY;
  let publicRole;try{publicRole=JSON.parse(Buffer.from(publicKey.split('.')[1],'base64url')).role}catch{}
  check('public-key',Boolean(typeof publicKey==='string'&&(/^sb_publishable_[A-Za-z0-9_-]+$/.test(publicKey)||publicRole==='anon')),'Configure a public publishable/anon key, never a service-role key.');
- check('server-key',serviceKey(env.SUPABASE_SERVICE_ROLE_KEY),'Configure the server-only Supabase service credential securely.');
+ check('server-key',serviceKey(serverAccountKey(env)),'Configure the server-only Supabase service credential securely. A valid private legacy supabase alias is supported.');
  check('owner',uuid.test(env.OWNER_USER_ID||''),'Configure the confirmed owner Auth UUID.');
  check('client-origin',Boolean(api(env.CLIENT_ORIGIN)),'Configure the exact browser origin (HTTPS when hosted).');
  const privateValue=value=>serviceKey(value)||/^(?:sk-(?:proj|svcacct)-|(?:sk|rk)_(?:test|live)_|whsec_)/.test(value);

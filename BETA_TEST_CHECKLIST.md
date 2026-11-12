@@ -4,12 +4,12 @@ Commit/branch: ____________________    URL: ____________________
 Date: __________    Tester slot: ____    Tester: ____________________
 Device/browser: ____________________    Printer/driver: ____________________
 
-Use an isolated backend and keep a card backup. The existing real-data project is read-only. AI, billing and development refill start disabled. Mark each applicable check **PASS, FAIL, BLOCKED or NOT TESTED** and retain evidence; an unchecked box is not a pass. Provider/physical-device checks require actual execution, not simulated UI results.
+The existing backend upgrade and protected Preview connection were explicitly approved and applied with all 25 existing table fingerprints preserved. Keep a card backup and perform mutation-based regression fixtures in disposable local/CI databases. Preview device AI and owner refill are enabled; cloud AI and checkout require their separate verified configuration. Production remains unchanged. Mark each applicable check **PASS, FAIL, BLOCKED or NOT TESTED** and retain evidence; an unchecked box is not a pass. Provider/physical-device checks require actual execution, not simulated UI results.
 
 ## Setup and account access — before inviting all ten testers
 
-- [ ] Follow current [BETA_SETUP.md](BETA_SETUP.md); use `config/beta.env.example` with securely supplied credentials from the same isolated backend.
-- [ ] Run `npm run beta:check` after securely filling the isolated environment. Record its offline result separately; configuration PASS is not Auth/REST/Storage or launch verification.
+- [ ] Follow current [BETA_SETUP.md](BETA_SETUP.md); use `config/beta.env.example` with securely supplied credentials from the approved backend.
+- [ ] Run `npm run beta:check` after securely filling the Preview environment. Record its offline result separately; configuration PASS is not Auth/REST/Storage or launch verification.
 - [ ] Confirm the exact feature commit is built; do not use old setup instructions or assume unpublished branches are available.
 - [ ] Check `/api/beta/status` reports `enabled:true`. `/api/health` alone establishes no integration readiness.
 - [ ] Owner signs in and sees ten tester slots separate from owner access.
@@ -51,7 +51,7 @@ Use an isolated backend and keep a card backup. The existing real-data project i
 
 ## Optional owner development refill
 
-- [ ] Enable only on the isolated development/Preview backend after reviewed optional SQL; provide the refill code securely in server-only settings.
+- [ ] Enable only in development/Preview on the approved backend after reviewed optional SQL; provide the refill code securely in server-only settings.
 - [ ] Owner's confirmed redemption adds **100 wallet credits** without Stripe or payment; retry the same operation and verify it adds nothing extra.
 - [ ] Wrong code, non-owner, missing setup and production requests cannot grant credits. Knowing the code alone is insufficient.
 - [ ] Switch accounts while refill is pending; no stale success, code or balance appears in the new account.
@@ -87,4 +87,4 @@ Front/back offset: ____________________. PDF/direct-print differences: _________
 - [ ] Retain exact automated commands/logs plus real integration/device evidence. [PR8 runtime/credit QA](docs/qa/runtime-credit-fix/QA-MATRIX.md) distinguishes mocks, native runtime checks and untested hardware.
 - [ ] Export a backup and verify rollback uses reviewed code artifacts while preserving user data and billing ledgers.
 - [ ] List remaining P0/P1/P2/P3 issues and recommend BLOCKED or PRIVATE BETA READY based on evidence. Do not declare readiness with missing required gates.
-- [ ] Obtain explicit approval before main merge, production deployment or any real-data change. Stop local servers with Ctrl+C when finished.
+- [ ] Obtain explicit approval before main merge, production deployment or destructive real-data changes. Stop local servers with Ctrl+C when finished.

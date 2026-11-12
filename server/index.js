@@ -3,6 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import {createAIRecovery} from './aiRecovery.js';
 import {mountAIReconcile} from './aiReconcile.js';
+import {mountBillingReadiness} from './billingReadiness.js';
+import {appOrigin} from './appOrigin.js';
 import {sendAIJson,aiReferenceLimit} from './aiTransport.js';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
@@ -17,7 +19,7 @@ import {mountDevCredits} from './devCredits.js';
 import {fetchDeck} from './deckImport.js';
 import {PACKS,ownsPack} from '../src/premiumCatalog.js';
 export function createApp({env=process.env,services=createServices(env),fetcher=fetch}={}){
- const app=express(),origin=env.CLIENT_ORIGIN||'http://127.0.0.1:5173',recovery=createAIRecovery(services),pending=new Set();
+ const app=express(),origin=appOrigin(env),recovery=createAIRecovery(services),pending=new Set();
  app.use(cors({origin}));
  const route=fn=>async(req,res,next)=>{try{await fn(req,res,next)}catch(e){if(res.headersSent){res.destroy();return;}res.status(e.status||(/Could not find.*pp_|function.*pp_.*does not exist/i.test(e.message||'')?503:500)).json({...(e.operationId?{operationId:e.operationId}:{}),error:/Could not find.*pp_|function.*pp_.*does not exist/i.test(e.message||'')?'Premium database setup is incomplete. See PREMIUM_SETUP.md.':e.message||'Server request failed.'})}};
  app.post('/api/billing/webhook',express.raw({type:'application/json',limit:'1mb'}),route(async(req,res)=>{
@@ -30,6 +32,7 @@ export function createApp({env=process.env,services=createServices(env),fetcher=
  app.use(express.json({limit:'12mb'}));
  app.get('/api/health',(_req,res)=>res.json({ok:true,aiConfigured:Boolean(env.OPENAI_API_KEY),accountsConfigured:services.configured,billingConfigured:Boolean(testBillingAllowed(env)&&services.stripe&&env.STRIPE_WEBHOOK_SECRET)}));
  mountAIReconcile(app,{env,services,recovery});
+ mountBillingReadiness(app,{env,services});
  mountBeta(app,{env,services,route});
  mountDeviceCredits(app,{env,services,route});
  mountDevCredits(app,{env,services,route});

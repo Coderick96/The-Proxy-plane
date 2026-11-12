@@ -96,6 +96,6 @@ export default function Home({saved=[], onNavigate, onOpen, client=null, user=nu
    </div>
   </section>
 
-  <footer className="plane-footer"><div><img src="/proxy-plane-icon-v4.png" alt="" width="32" height="32" loading="lazy"/><strong>THE PROXY PLANE</strong><span>by ChaseCreates</span></div><p>A fan-made creative tool, unaffiliated with and not endorsed by Wizards of the Coast. Magic: The Gathering and related marks belong to Wizards of the Coast. Proxies are for personal play; check with your playgroup and event rules.</p></footer>
+  <footer className="plane-footer"><div><img src="/proxy-plane-mark.png" alt="" width="32" height="32" loading="lazy"/><strong>THE PROXY PLANE</strong><span>by ChaseCreates</span></div><p>A fan-made creative tool, unaffiliated with and not endorsed by Wizards of the Coast. Magic: The Gathering and related marks belong to Wizards of the Coast. Proxies are for personal play; check with your playgroup and event rules.</p></footer>
  </main>;
 }

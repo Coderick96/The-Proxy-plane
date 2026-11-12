@@ -43,6 +43,7 @@ jobs:
       - run: docker pull postgres:17.6-bookworm@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3
       - run: docker pull public.ecr.aws/supabase/gotrue@sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b
       - run: docker pull public.ecr.aws/supabase/postgrest@sha256:1347d7552b88f17832912c06afbf7c43209af6eeeb60834b04aae12c9bd9d5cc
+      - run: node tests/ai-recovery-capacity.mjs --native
       - run: node tests/postgres-concurrency.mjs
       - run: npm run test:accounts-local
 

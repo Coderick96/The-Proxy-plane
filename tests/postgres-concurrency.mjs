@@ -31,7 +31,7 @@ try{
  // Auth/storage interfaces are fixtures; this validates real SQL/connections, not Supabase services.
  const fixture=await readFile(new URL('./fixtures/postgres-bootstrap.sql',import.meta.url),'utf8');
  await sql(fixture,'postgres');
- for(const name of ['schema','community','premium','evolution','credits','ai_recovery','dev_credits','credits'])await sql(await readFile(new URL('../supabase/'+name+'.sql',import.meta.url),'utf8'),'postgres');
+ for(const name of ['schema','community','premium','evolution','credits','ai_recovery','ai_recovery_capacity','dev_credits','credits'])await sql(await readFile(new URL('../supabase/'+name+'.sql',import.meta.url),'utf8'),'postgres');
  const [a,b,c,d,e]=Array.from({length:5},()=>randomUUID());
  await sql(`insert into auth.users(id)values(${quote(a)}),(${quote(b)}),(${quote(c)}),(${quote(d)}),(${quote(e)});`,'postgres');
  const duplicate=randomUUID(),same=await race(16,()=>charge(a,duplicate));

@@ -1,12 +1,12 @@
 # The Proxy Plane 2.6.5 — private-beta test candidate
 
-Current setup: [BETA_SETUP.md](BETA_SETUP.md). Copy the tracked, nonsecret [environment template](config/beta.env.example) to an untracked `.env` and provide credentials securely. The existing real-data Supabase project remains read-only; use an isolated local or explicitly approved hosted backend. No paid resource or production deployment is required to continue local verification.
+Current setup: [BETA_SETUP.md](BETA_SETUP.md). Copy the tracked, nonsecret [environment template](config/beta.env.example) to an untracked `.env` and provide credentials securely. The user explicitly approved the focused existing-backend upgrade and protected beta connection; preexisting table fingerprints were preserved. Use disposable local/CI services for mutation-based fixtures, preserve real user data, and do not replay baseline setup. No new paid resource or production deployment is required.
 
 Current credit policy: 10 introductory credits once, 200 per verified paid Premium month, and one credit for three artwork choices in either device or cloud mode. Existing purchased wallets and historical grants are preserved. Owner development refills are optional, server-authorized and disabled in production.
 
-Browser-local artwork is available in the protected feature preview under **AI Art Studio → On this device**. It needs compatible WebGPU hardware and authenticated account-credit authorization, but no desktop companion or OpenAI key. See [DEVICE_AI.md](DEVICE_AI.md) for model download size, license and hardware limits. Full physical-device diffusion and hosted account/credit integration remain unverified; a preview URL is not launch certification.
+Browser-local artwork is available in the protected feature preview under **AI Art Studio → On this device**. It needs compatible WebGPU hardware and authenticated account-credit authorization, but no desktop companion or OpenAI key. See [DEVICE_AI.md](DEVICE_AI.md) for model download size, license and hardware limits. Actual pinned model graphs produced three images in CPU reference testing; native physical-device diffusion remains unverified. Hosted credentials, scheduled recovery and Stripe test prices/signature handling are verified, while genuine tester checkout fulfillment and external provider/device acceptance remain separate. Cloud mode stays unavailable until its existing provider key is supplied securely; a preview URL is not launch certification.
 
-Use [the current runtime/credit QA matrix](docs/qa/runtime-credit-fix/QA-MATRIX.md) and [the beta acceptance checklist](BETA_TEST_CHECKLIST.md). The source remains on a separate feature branch; main and production have not been updated. Earlier audit evidence is retained in [the release review](docs/qa/RELEASE-REVIEW.md).
+Use [the latest connected-beta QA matrix](docs/qa/hosted-activation/RESULTS.md) and [the beta acceptance checklist](BETA_TEST_CHECKLIST.md). The source remains on a separate feature branch; main and production have not been updated. Earlier audit evidence is retained in [the release review](docs/qa/RELEASE-REVIEW.md).
 
 ## Historical release notes
 

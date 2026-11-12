@@ -277,3 +277,15 @@ Official docs verified: https://developers.openai.com/api/docs/models/gpt-image-
 Implemented supported image model/quality configuration and generic provider errors for both artwork and re-sketch; three choices/onecredit, safety checks and durable response behavior retained. Added distinct server-side cloud pause and bounded recovery admission, with no existing results/credits removed.
 
 Executed local evidence: full suite40groupsPASS; buildPASS; npmproductionaudit0; operatorHTTPfixturePASS; logical-capacityPGlitePASS; native PostgreSQL independent-connections admissionracePASS. Capacity function-only migration applied to approved backend;6credit/recoverytablecounts+fingerprints unchanged. Providermodelaccessandrealgenerationnotyetclaimed. Stage2 operator code implemented/localtestsPASS; actualPreview verificationpending. Stage3CIandnewPreviewpending.
+
+
+## Actual hosted verification outcome
+
+The supplied key is Preview-only and hosted model access returned200 for pinnedFlare and retainedtext/safetymodels. An initial operatorPOST rejected Vercel routingmetadata beforeanyproviders/debit; fixed and regressiontested. Actualinferencecheck then reached OpenAI but returned429, safely classified on a pacedretry as INSUFFICIENT_API_QUOTA (billingbalance or spendinglimit). The failure occurred in pre-reservation safety: zero fixed-operation rows, zero app-credit charges, no images generated. Do not infer successfulgeneration or exactcosts from modelaccess200. Server BETA_CLOUD_AI_ENABLED and browser VITE_CLOUD_ART_ENABLED remainfalse. Userasked to correct APIbilling/limits or choose device-onlybeta; no newkey, paidplan, livepayment or accountfundingperformed.
+
+Stage1 code complete and tested. Stage2 actualkey/modelconnectivityPASS; paid three-image pipelineBLOCKED by providerquota, not keysetup. Stage3 latestCI/preview evidence is recorded in docs/qa/cloud-launch/RESULTS.md and releaseartifacts. Other externalidentity/checkout, actualdeviceGPU and physicalprinter gates remain unchanged. Operatorvalidation stays secret-gated withonefixedoperation while the externalquota restriction is unresolved; disable its flag after verification completes.
+
+
+## Final stage status
+
+Stage3 executed: CI43332650539 allfourjobsPASS on8cc8cb359e2418656feaf34f0cb94420d8aba0a9;40regressiongroups, nativecapacityrace, fullSupabaseAuth/REST/Storage/Mailpit andbrowser/runtime/PDF. Hostedgate390/768/1440passed, testwebhookretargeted, updatedsource/evidencepackageprepared. ModelaccessPASS and codevalidationcomplete; actualcloudfulfillment remainsBLOCKED by INSUFFICIENT_API_QUOTA withzeroappcreditdebits. Generalcloudflagsstayfalsependingaccountownerbilling/limitcorrection. Full release recommendation remainsBLOCKED; productionnotpromotedbythiswork.

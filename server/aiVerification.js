@@ -45,7 +45,11 @@ export function mountAIVerification(app,{env,services,recovery,fetcher=fetch}){
     return res.json({ok:true,keyAndModelsReachable:true,model:config.model,quality:config.quality,inferenceTested:false});
    }catch{return res.status(503).json({error:'Cloud model access could not be verified.'})}
   }
-  if(Object.keys(req.body||{}).length||Object.keys(req.query||{}).length)return res.status(400).json({error:'Verification accepts no overrides.'});
+  let payload=req.body;
+  try{if(Buffer.isBuffer(payload)||typeof payload==='string')payload=JSON.parse(payload.toString())}catch{return res.status(400).json({error:'Verification accepts no overrides.'})}
+  // Vercel's /api/:path* rewrite can supply its routing parameter. It never
+  // selects an owner, prompt or operation; all action inputs remain server fixed.
+  if(payload!==undefined&&payload!==null&&(typeof payload!=='object'||Array.isArray(payload)||Object.keys(payload).length)||Object.keys(req.query||{}).some(key=>key!=='path'))return res.status(400).json({error:'Verification accepts no overrides.'});
   const owner=env.OWNER_USER_ID,operationId=env.AI_VERIFICATION_OPERATION_ID;
   if(!services.configured||env.BETA_MODE!=='true'||env.AI_RECOVERY_SCHEDULER_VERIFIED!=='true'||!uuid.test(owner||'')||!uuid.test(operationId||''))return res.status(503).json({error:'Durable owner verification is not configured.'});
   if(busy)return res.status(409).json({error:'Verification is already running.',operationId});

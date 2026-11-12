@@ -6,7 +6,7 @@ Current credit policy: 10 introductory credits once, 200 per verified paid Premi
 
 Browser-local artwork is available in the protected feature preview under **AI Art Studio → On this device**. It needs compatible WebGPU hardware and authenticated account-credit authorization, but no desktop companion or OpenAI key. See [DEVICE_AI.md](DEVICE_AI.md) for model download size, license and hardware limits. Actual pinned model graphs produced three images in CPU reference testing; native physical-device diffusion remains unverified. Hosted credentials, scheduled recovery and Stripe test prices/signature handling are verified, while genuine tester checkout fulfillment and external provider/device acceptance remain separate. Cloud mode stays unavailable until its existing provider key is supplied securely; a preview URL is not launch certification.
 
-Use [the latest connected-beta QA matrix](docs/qa/hosted-activation/RESULTS.md) and [the beta acceptance checklist](BETA_TEST_CHECKLIST.md). The source remains on a separate feature branch; main and production have not been updated. Earlier audit evidence is retained in [the release review](docs/qa/RELEASE-REVIEW.md).
+Use [the latest account-safety verification](docs/qa/launch-final/RESULTS.md) and [the connected-beta QA matrix](docs/qa/hosted-activation/RESULTS.md) and [the beta acceptance checklist](BETA_TEST_CHECKLIST.md). The source remains on a separate feature branch; main and production have not been updated. Earlier audit evidence is retained in [the release review](docs/qa/RELEASE-REVIEW.md).
 
 ## Historical release notes
 

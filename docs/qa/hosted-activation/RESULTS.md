@@ -1,5 +1,7 @@
 # Final connected private-beta verification
 
+Latest account-isolation repairs and mobile asset verification: [launch-final/RESULTS.md](../launch-final/RESULTS.md). The service evidence below records the earlier connected baseline.
+
 Recommendation: **BLOCKED for full release acceptance; controlled owner/tester beta is available.** No main merge, production promotion or live payment occurred. This report supersedes earlier read-only/not-configured snapshots.
 
 Tested application commit: `428d2d32ee85b87e70be805bd4f9a2166f89f791`.

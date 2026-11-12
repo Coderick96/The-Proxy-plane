@@ -6,6 +6,12 @@ const digest=value=>createHash('sha256').update(value).digest();
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const prompt='A silver dragon resting above an ancient forest temple at sunrise, original fantasy illustration, no text or frame.';
 const size='1024x1536';
+export function classifyCloudFailure(status,value){
+ let body=value;try{if(typeof value==='string')body=JSON.parse(value)}catch{body={error:{message:value}}}
+ const detail=[body?.error?.code,body?.error?.type,body?.error?.message].filter(v=>typeof v==='string').join(' ').toLowerCase();
+ const code=/insufficient_quota|insufficient_user_quota|current quota|billing quota|run out of credits|no balance|billing_hard_limit|usage_limit_reached/.test(detail)?'INSUFFICIENT_API_QUOTA':/rate_limit_exceeded|requests.per.minute|tokens.per.minute|too many requests/.test(detail)?'RATE_LIMIT':[401,403].includes(status)?'KEY_OR_MODEL_ACCESS':status===429?'API_LIMIT_REACHED':'PROVIDER_UNAVAILABLE';
+ return {providerStatus:status,code};
+}
 function summary(result,operationId,replayed){
  if(!result||result.operationId!==operationId||result.creditsSpent!==1||!Array.isArray(result.images)||result.images.length!==3||result.images.some(image=>typeof image!=='string'||!image.startsWith('data:image/png;base64,')))throw Error('Incomplete verification result');
  return {ok:true,operationId,replayed,choices:3,creditsSpent:1,model:result.model,quality:result.quality,...(result.usage?{usage:result.usage}:{})};
@@ -29,8 +35,8 @@ export function mountAIVerification(app,{env,services,recovery,fetcher=fetch}){
   const verificationFetch=async(...args)=>{
    const response=await fetcher(...args);
    if(!response.ok){
-    let code;try{const body=await response.clone().json();if(['insufficient_quota','invalid_api_key','model_not_found','rate_limit_exceeded','permission_denied'].includes(body?.error?.code))code=body.error.code}catch{/* Never return a provider body. */}
-    providerFailure={providerStatus:response.status,...(code?{code}:{})};
+    let detail;try{detail=await response.clone().text()}catch{/* Never return a provider body. */}
+    providerFailure=classifyCloudFailure(response.status,detail);
    }
    return response;
   };

@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {createApp} from '../server/index.js';
+import {classifyCloudFailure} from '../server/aiVerification.js';
+assert.equal(classifyCloudFailure(429,{error:{code:null,type:'insufficient_quota',message:'fixture private details'}}).code,'INSUFFICIENT_API_QUOTA');
+assert.equal(classifyCloudFailure(429,JSON.stringify({error:{message:'You exceeded your current quota; fixture-private-key'}})).code,'INSUFFICIENT_API_QUOTA');
+assert.equal(classifyCloudFailure(429,{error:{code:'rate_limit_exceeded',message:'Requests per minute limit'}}).code,'RATE_LIMIT');
+assert.equal(classifyCloudFailure(429,'unrecognized').code,'API_LIMIT_REACHED');
+assert(!JSON.stringify(classifyCloudFailure(429,{error:{message:'fixture-private-key'}})).includes('fixture-private-key'));
 const env={VERCEL_ENV:'preview',AI_VERIFICATION_ENABLED:'true',AI_VERIFICATION_SECRET:'v'.repeat(64),OPENAI_API_KEY:'fixture-private-key',OWNER_USER_ID:randomUUID(),AI_VERIFICATION_OPERATION_ID:randomUUID(),BETA_MODE:'true',BETA_AI_ENABLED:'true',BETA_CLOUD_AI_ENABLED:'false',AI_RECOVERY_SCHEDULER_VERIFIED:'true',SERVERLESS_MODE:'true'};
 const events=[],operations=new Map();let providerCalls=0,imageCalls=0,safetyCalls=0,charges=0,refunds=0,providerFail=false;
 const services={configured:true,user:async()=>{throw Error('Operator route must not impersonate an Auth session')},rpc:async(name,args)=>{

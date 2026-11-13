@@ -95,7 +95,7 @@ try{
  console.log('PASS actual disposable Supabase services started with loopback-only published ports.');
  // These are actual service schemas; no auth/storage compatibility tables are substituted.
  await sql("select count(*) from auth.users;select count(*) from storage.objects;");
- for(const name of ['schema','community','premium','evolution','credits','ai_recovery','dev_credits','storage_quota_compat'])await sql(await readFile(new URL('../supabase/'+name+'.sql',import.meta.url),'utf8'));
+ for(const name of ['schema','community','premium','evolution','credits','ai_recovery','ai_recovery_capacity','dev_credits','storage_quota_compat'])await sql(await readFile(new URL('../supabase/'+name+'.sql',import.meta.url),'utf8'));
  await sql("notify pgrst,'reload schema';");
  const options={auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}};
  const admin=createClient(api,serviceKey,options),users=[];

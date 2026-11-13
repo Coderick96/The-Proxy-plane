@@ -37,8 +37,9 @@ For a **new, empty isolated** Supabase database, review and execute this order:
 4. `supabase/evolution.sql`
 5. `supabase/credits.sql` — includes the one-credit device authorization RPC and private receipt table.
 6. `supabase/ai_recovery.sql` — required before cloud AI; installs durable reservation/result/refund recovery.
-7. `supabase/dev_credits.sql` — optional owner development/Preview refill only.
-8. `supabase/beta.sql` — **last**, so beta restrictions cover the installed feature tables/functions.
+7. `supabase/ai_recovery_capacity.sql` — bounded recovery-result capacity; no existing data deletion.
+8. `supabase/dev_credits.sql` — optional owner development/Preview refill only.
+9. `supabase/beta.sql` — **last**, so beta restrictions cover the installed feature tables/functions.
 
 Do not blindly replay this fresh-install sequence on an existing database. Existing data needs a reviewed upgrade, backup and rehearsed restore. Historical 15-credit starter grants and existing purchased wallets are preserved by the compatibility logic; new starter grants are 10 credits. Unknown constraints intentionally abort rather than overwrite data. Rerunning earlier scripts can replace function definitions; reapply the reviewed beta restrictions last before admitting testers.
 
@@ -127,3 +128,14 @@ Set `VITE_GOOGLE_AUTH_ENABLED` and `VITE_APPLE_AUTH_ENABLED` to match the actual
 The approved Manafiquetcg account has verified TEST prices and a signed webhook; Preview test billing is enabled while production remains disabled. A dedicated automation bypass permits Stripe to reach only the configured protected URL; never publish its query token or signing secret. When deploying a new Preview, update the test webhook destination to that exact immutable host and verify signature handling again. Revoke the dedicated bypass and disable the test endpoint if retiring the beta.
 
 Preview checkout and portal return destinations use hosting-supplied VERCEL_URL, never user-controlled request headers; production/local CLIENT_ORIGIN behavior is preserved. The test portal permits cancellation at the paid period end. No live payment is enabled. Authenticated test checkout through to credits still needs owner/tester acceptance; probe delivery is not purchase fulfillment evidence.
+
+
+### Current cloud artwork configuration
+
+The retired GPT Image1 default is replaced by pinned `gpt-image-2.5-flare-2026-09-08`. Set server-only `OPENAI_IMAGE_QUALITY=medium` (allowed low/medium/high) for explicit generation settings. User requests cannot override the model, quality or three-image count. Both generation and re-sketch return three choices for one app credit; OpenAI billing is separate and varies with actual token usage. Metadata captures sanitized usage; it is not an exact provider invoice.
+
+In beta, `BETA_AI_ENABLED` permits device AI, and the separate `BETA_CLOUD_AI_ENABLED` must also be true for any cloud image/card/review call. Keep it false and `VITE_CLOUD_ART_ENABLED=false` until provider access and generation/safety/recovery have been verified. A browser flag alone is not authorization.
+
+Cloud recovery now admits new reservations only within conservative logical128MiB global/64MiB account limits, accounting20MiB for each pending result plus4KiB metadata. Existing results remain readable/replayable even when full. Capacity rejection occurs before any app-credit debit. These are logical payload/reservation bounds, not PostgreSQL/WAL/physical-disk measurements or deletion/retention guarantees. Monitor actual database size; do not delete user results to create space without review.
+
+Temporary operator validation uses `/api/internal/ai/verify`, enabled only on exact Vercel Preview with `AI_VERIFICATION_ENABLED=true` and a strong separate secret. GET checks key/model reachability without inference. POST permits only a fixed configured owner/operation/prompt and a three-image batch through ordinary safety/durable recovery. It can consume one owner app credit and actual API usage; replays return stored metadata without another image call. Do not expose the secret or accept client overrides. Disable the operator flag after validation. It does not establish genuine tester login or checkout acceptance.

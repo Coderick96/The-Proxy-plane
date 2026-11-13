@@ -5,3 +5,6 @@
 .art-choice-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:14px 0}.art-choice-grid article{display:flex;flex-direction:column;gap:8px;padding:10px;background:#241b30;border:1px solid #685474;border-radius:10px}.art-choice-grid img{width:100%;aspect-ratio:2/3;object-fit:cover}.art-choices textarea{width:100%}.art-choices label{display:flex;flex-direction:column;gap:8px}
 
 .developer-credits{padding:16px;margin:18px 0;border:1px solid #647c77;border-radius:12px;overflow-wrap:anywhere}.developer-credits summary{min-height:44px;cursor:pointer}.developer-credits label{display:grid;gap:8px}.developer-credits input{width:100%;max-width:420px;min-height:44px;padding:10px;background:#101c1b;color:#edf5ef;border:1px solid #647c77;border-radius:8px}.developer-credits button{min-height:44px;margin-top:12px}.developer-credits :is(input,button):focus-visible{outline:3px solid #80e8d1;outline-offset:3px}
+
+/* Keep purchase and account controls comfortable on touch screens. */
+.premium-page button{min-height:44px}

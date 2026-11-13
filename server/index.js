@@ -13,7 +13,8 @@ import path from 'node:path';
 import {readFile} from 'node:fs/promises';
 import {mountBeta} from './beta.js';
 import {checkAISafety} from './aiSafety.js';
-import {createServices,catalog,testBillingAllowed,isTestStripeKey} from './premium.js';
+import {createServices,catalog,billingAllowed,billingMode,isTestStripeKey} from './premium.js';
+import {stripeObjectMatchesMode,stripeEventMatchesMode} from './billingMode.js';
 import {structuredAI,SET_SCHEMA,REVIEW_SCHEMA,validateSet} from './ai.js';
 import {mountDeckStore} from './deckStore.js';
 import {mountDeviceCredits} from './deviceCredits.js';
@@ -25,40 +26,43 @@ export function createApp({env=process.env,services=createServices(env),fetcher=
  app.use(cors({origin}));
  const route=fn=>async(req,res,next)=>{try{await fn(req,res,next)}catch(e){if(res.headersSent){res.destroy();return;}res.status(e.status||(/Could not find.*pp_|function.*pp_.*does not exist/i.test(e.message||'')?503:500)).json({...(e.operationId?{operationId:e.operationId}:{}),error:/Could not find.*pp_|function.*pp_.*does not exist/i.test(e.message||'')?'Premium database setup is incomplete. See PREMIUM_SETUP.md.':e.message||'Server request failed.'})}};
  app.post('/api/billing/webhook',express.raw({type:'application/json',limit:'1mb'}),route(async(req,res)=>{
-  if(!isTestStripeKey(env.STRIPE_SECRET_KEY))return res.status(403).json({error:'Only test-mode billing is available.'});
+  if(billingMode(env)==='disabled')return res.status(403).json({error:'Billing is disabled for this environment.'});
   if(!services.stripe||!env.STRIPE_WEBHOOK_SECRET)return res.status(503).json({error:'Billing webhook is not configured.'});
   let event;try{event=services.stripe.webhooks.constructEvent(req.body,req.headers['stripe-signature'],env.STRIPE_WEBHOOK_SECRET)}catch{return res.status(400).json({error:'Invalid webhook signature.'})}
-  if(event.livemode!==false)return res.status(400).json({error:'Only Stripe test-mode webhook events are accepted.'});
+  if(!stripeEventMatchesMode(env,event))return res.status(400).json({error:'Stripe webhook mode does not match this environment.'});
   await services.webhook(event);res.json({received:true});
  }));
  app.use(express.json({limit:'12mb'}));
- app.get('/api/health',(_req,res)=>res.json({ok:true,aiConfigured:Boolean(env.OPENAI_API_KEY),accountsConfigured:services.configured,billingConfigured:Boolean(testBillingAllowed(env)&&services.stripe&&env.STRIPE_WEBHOOK_SECRET)}));
+ app.get('/api/health',(_req,res)=>res.json({ok:true,aiConfigured:Boolean(env.OPENAI_API_KEY),accountsConfigured:services.configured,billingConfigured:Boolean(billingAllowed(env)&&services.stripe&&env.STRIPE_WEBHOOK_SECRET)}));
  mountAIReconcile(app,{env,services,recovery});
  mountBillingReadiness(app,{env,services});
  mountAIVerification(app,{env,services,recovery,fetcher});
  mountBeta(app,{env,services,route});
  mountDeviceCredits(app,{env,services,route});
  mountDevCredits(app,{env,services,route});
- const betaSalesOff=()=>!testBillingAllowed(env);
- app.use(['/api/billing/checkout','/api/billing/portal'],(req,res,next)=>betaSalesOff()?res.status(403).json({error:'Purchases require test-mode Stripe credentials; private beta also requires test billing opt-in.'}):next());
+ const betaSalesOff=()=>!billingAllowed(env);
+ const billingReady=async()=>{if(!billingAllowed(env)||!services.stripe)return false;if(billingMode(env)==='live'&&!services.billingReady)throw Object.assign(new Error('Live billing account verification is unavailable.'),{status:503});return services.billingReady?services.billingReady():true;};
+ app.use('/api/billing/checkout',(req,res,next)=>betaSalesOff()?res.status(403).json({error:'Purchases are disabled for this environment.'}):next());
  const deckLimits=new Map();
  app.post('/api/decks/import',route(async(req,res)=>{const key=req.ip,now=Date.now();let limit=deckLimits.get(key);if(!limit||now-limit.start>60000){limit={start:now,count:0};if(deckLimits.size>5000)deckLimits.clear();deckLimits.set(key,limit)}if(++limit.count>10)return res.status(429).json({error:'Please wait a minute before importing another deck URL.'});if(typeof req.body?.url!=='string'||req.body.url.length>2000)return res.status(400).json({error:'Paste a supported public deck URL.'});try{res.json(await fetchDeck(req.body.url,{fetcher}))}catch(e){res.status(400).json({error:e.name==='TimeoutError'?'Deck site timed out. Try its text export instead.':e.message})}}));
 
  app.get('/api/premium/catalog',route(async(_req,res)=>{
-  const products=await Promise.all((await services.products()).map(async p=>{if(betaSalesOff()||!services.stripe||!p.price||!env.STRIPE_WEBHOOK_SECRET)return {...p,price:undefined,available:false};const price=await services.stripe.prices.retrieve(p.price);return {...p,price:undefined,available:price.active,currency:price.currency,amount:price.unit_amount,interval:price.recurring?.interval};}));res.json({products,testMode:isTestStripeKey(env.STRIPE_SECRET_KEY)});
+  let ready=false,portalReady=false;try{ready=await billingReady()}catch{}
+  try{portalReady=billingMode(env)!=='disabled'&&Boolean(services.stripe)&&(billingMode(env)!=='live'||Boolean(services.billingReady&&await services.billingReady({fulfillment:true})))}catch{}
+  const products=await Promise.all((await services.products()).map(async p=>{if(!ready||!p.price||!env.STRIPE_WEBHOOK_SECRET)return {...p,price:undefined,available:false};try{const price=await services.stripe.prices.retrieve(p.price);return {...p,price:undefined,available:Boolean(price.active&&stripeObjectMatchesMode(env,price)),currency:price.currency,amount:price.unit_amount,interval:price.recurring?.interval};}catch{return {...p,price:undefined,available:false,unavailableReason:'This offer is temporarily unavailable.'};}}));res.set('Cache-Control','private, no-store').json({products,testMode:billingMode(env)==='test',billing:{enabled:Boolean(ready&&env.STRIPE_WEBHOOK_SECRET),portalEnabled:Boolean(portalReady&&env.STRIPE_WEBHOOK_SECRET),mode:billingMode(env),reason:ready&&env.STRIPE_WEBHOOK_SECRET?'':billingMode(env)==='live'?'Live billing setup or account verification is incomplete.':'Purchases are disabled for this environment. Use the current test beta to verify checkout.'}});
  }));
  app.get('/api/premium/access',route(async(req,res)=>{const u=await services.user(req);res.json(await services.access(u.id))}));
  app.get('/api/premium/assets/:pack/:design',route(async(req,res)=>{const u=await services.user(req),a=await services.access(u.id);const p=PACKS.find(p=>p.id===req.params.pack);if(!p||!p.backs.includes(req.params.design))return res.sendStatus(404);if(!ownsPack(a,p.id))return res.status(403).json({error:'This design requires its pack or Premium.'});res.set('Cache-Control','private, no-store').json({image:'data:image/svg+xml;base64,'+(await readFile(new URL(`./assets/${p.id}-${req.params.design}.svg`,import.meta.url))).toString('base64')});}));
  app.post('/api/billing/checkout',route(async(req,res)=>{
-  const u=await services.user(req);if(!services.stripe||!env.STRIPE_WEBHOOK_SECRET)return res.status(503).json({error:'Purchases are not configured yet.'});const p=(await services.products()).find(p=>p.id===req.body?.product);if(!p?.price)return res.status(400).json({error:'This product is not available yet.'});
+  const u=await services.user(req);if(!await billingReady()||!env.STRIPE_WEBHOOK_SECRET)return res.status(503).json({error:'Purchases are not configured yet.'});const p=(await services.products()).find(p=>p.id===req.body?.product);if(!p?.price)return res.status(400).json({error:'This product is not available yet.'});
   const price=await services.stripe.prices.retrieve(p.price);
   const expectedAmounts={credits_10:299,credits_30:699,credits_80:1499,premium_monthly:1499};
-  if(!price.active||price.currency!=='usd'||(expectedAmounts[p.id]!==undefined&&price.unit_amount!==expectedAmounts[p.id]))return res.status(503).json({error:'Stripe price configuration does not match the published offer.'});
+  if(!stripeObjectMatchesMode(env,price)||!price.active||price.currency!=='usd'||(expectedAmounts[p.id]!==undefined&&price.unit_amount!==expectedAmounts[p.id]))return res.status(503).json({error:'Stripe price configuration does not match the published offer.'});
   if(p.kind==='subscription'?(price.recurring?.interval!=='month'||price.recurring?.interval_count!==1):Boolean(price.recurring))return res.status(503).json({error:'Stripe billing interval does not match the product.'});
   const a=await services.access(u.id);if(p.id==='studio_pass'&&a.studioPassOwned||p.id.startsWith('pack_')&&a.ownedPacks?.includes(p.id.slice(5))||p.id==='premium_monthly'&&a.premium||p.id.startsWith('deck:')&&a.ownedDecks?.includes(p.id.slice(5)))return res.status(409).json({error:'You already own this product or have an active membership.'});
   const customer=await services.customer(u.id,u.email);if((await services.products()).filter(item=>item.price===p.price).length!==1)throw Object.assign(new Error('Each product must have its own Stripe Price ID.'),{status:503});const session=await services.stripe.checkout.sessions.create({customer,mode:p.kind,metadata:{product:p.id},client_reference_id:u.id,line_items:[{price:p.price,quantity:1}],success_url:origin+'/?checkout=success',cancel_url:origin+'/?checkout=cancel',...(p.kind==='subscription'?{subscription_data:{metadata:{user_id:u.id}}}:{payment_intent_data:{metadata:{user_id:u.id}}})},...(p.kind==='subscription'?[{idempotencyKey:`pp-membership-${u.id}-${Math.floor(Date.now()/600000)}`}]:[]));res.json({url:session.url});
  }));
- app.post('/api/billing/portal',route(async(req,res)=>{const u=await services.user(req);if(!services.stripe)return res.status(503).json({error:'Billing is not configured.'});const customer=await services.customer(u.id,u.email);res.json({url:(await services.stripe.billingPortal.sessions.create({customer,return_url:origin})).url})}));
+ app.post('/api/billing/portal',route(async(req,res)=>{if(billingMode(env)==='disabled')return res.status(403).json({error:'Billing is disabled for this environment.'});const u=await services.user(req);if(billingMode(env)==='live'&&(!services.billingReady||!await services.billingReady({fulfillment:true})))return res.status(503).json({error:'Billing is not configured.'});if(!services.stripe)return res.status(503).json({error:'Billing is not configured.'});const customer=await services.customer(u.id,u.email);res.json({url:(await services.stripe.billingPortal.sessions.create({customer,return_url:origin})).url})}));
  async function aiRequest(req,res,kind,work){
   const u=await services.user(req);if(env.BETA_MODE==='true'&&env.BETA_AI_ENABLED!=='true')return res.status(503).json({error:'AI generation is paused for this beta. Upload artwork or import card text to keep testing.'});if(env.BETA_MODE==='true'&&env.BETA_CLOUD_AI_ENABLED!=='true')return res.status(503).json({error:'Cloud AI generation is paused for this beta. On-device artwork and uploads remain available.'});if(!env.OPENAI_API_KEY)return res.status(503).json({error:'AI is not configured on the server.'});
   if(kind==='art'||kind==='resketch')cloudImageConfig(env);

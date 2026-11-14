@@ -18,7 +18,7 @@ export async function checkDeviceSupport(scope=globalThis){
  if(typeof scope.Worker!=='function'||!scope.navigator?.gpu?.requestAdapter)return {supported:false,message:'This browser does not provide the GPU features needed for on-device generation. Try an updated compatible browser, or upload artwork.'};
  try{
   const adapter=await scope.navigator.gpu.requestAdapter({powerPreference:'high-performance'});
-  if(!adapter||adapter.isFallbackAdapter===true||!adapter.features.has('shader-f16')||(adapter.limits.maxStorageBufferBindingSize||0)<DEVICE_GPU_MIN_BUFFER||(adapter.limits.maxBufferSize||0)<DEVICE_GPU_MIN_BUFFER)return {supported:false,message:'This device’s available GPU cannot run this model. You can still upload artwork or use cloud mode when available.'};
+  if(!adapter||adapter.isFallbackAdapter===true||!adapter.features.has('shader-f16')||(adapter.limits.maxStorageBufferBindingSize||0)<DEVICE_GPU_MIN_BUFFER||(adapter.limits.maxBufferSize||0)<DEVICE_GPU_MIN_BUFFER)return {supported:false,message:'This device’s available GPU cannot run this model. You can still upload artwork. No paid cloud fallback is required.'};
   return {supported:true,message:'Required GPU features detected. Model loading will check whether enough memory is available.'};
  }catch{return {supported:false,message:'The browser could not access a compatible GPU. Close other GPU-heavy tabs and retry, or upload artwork.'};}
 }

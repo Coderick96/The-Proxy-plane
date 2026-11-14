@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import {billingMode,billingAllowed,stripeObjectMatchesMode} from '../server/billingMode.js';
 import {createServices} from '../server/premium.js';
 import {createApp} from '../server/index.js';
-const live={VERCEL_ENV:'production',BILLING_MODE:'live',LIVE_PAYMENTS_ENABLED:'true',BILLING_LIVE_DATA_ISOLATED:'true',STRIPE_EXPECTED_ACCOUNT_ID:'acct_fixture',STRIPE_SECRET_KEY:'rk_live_fixture',STRIPE_WEBHOOK_SECRET:'whsec_fixture',STRIPE_PRICE_CREDITS_10:'price_credit'};
+const live={DEVICE_AI_PAID_RELEASE_VERIFIED:'true',VERCEL_ENV:'production',BILLING_MODE:'live',LIVE_PAYMENTS_ENABLED:'true',BILLING_LIVE_DATA_ISOLATED:'true',STRIPE_EXPECTED_ACCOUNT_ID:'acct_fixture',STRIPE_SECRET_KEY:'rk_live_fixture',STRIPE_WEBHOOK_SECRET:'whsec_fixture',STRIPE_PRICE_CREDITS_10:'price_credit'};
 assert.equal(billingMode(live),'live');
 for(const field of ['VERCEL_ENV','BILLING_MODE','LIVE_PAYMENTS_ENABLED','BILLING_LIVE_DATA_ISOLATED','STRIPE_EXPECTED_ACCOUNT_ID','STRIPE_SECRET_KEY']){assert.equal(billingAllowed({...live,[field]:undefined}),false,field+' must be explicit');}
 for(const environment of ['preview','development',undefined])assert.equal(billingMode({...live,VERCEL_ENV:environment}),'disabled');

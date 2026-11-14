@@ -2,12 +2,13 @@ import React,{useState} from 'react';
 import DeviceArtworkStudio from './DeviceArtworkStudio.jsx';
 import {Sparkles,RefreshCw} from 'lucide-react';
 import ArtChoices from './ArtChoices.jsx';
-export default function ArtworkStudio({prompt,onPrompt,busy=false,error='',connected=false,signedIn=false,onSignIn,onGenerate,images=[],canResketch=false,onPick,onResketch,onLocal,recovery,contextKey='',initialMode='device',client=null,user=null,credits=null,onRefresh,cloudEnabled=true}){
+export default function ArtworkStudio({prompt,onPrompt,busy=false,error='',connected=false,signedIn=false,onSignIn,onGenerate,images=[],canResketch=false,onPick,onResketch,onLocal,recovery,contextKey='',initialMode='device',client=null,user=null,credits=null,onRefresh,cloudEnabled=false}){
  const [mode,setMode]=useState(initialMode);
+ const activeMode=cloudEnabled?mode:'device';
  return <div className="ai-box integrated-art-studio">
-  <div className="ai-title"><Sparkles size={17}/><b>AI Art Studio</b></div>
-  <div className="artwork-mode-picker" role="group" aria-label="Artwork generation mode"><button type="button" className="secondary" aria-pressed={mode==='device'} onClick={()=>setMode('device')}>On this device</button><button type="button" className="secondary" aria-pressed={mode==='cloud'} onClick={()=>setMode('cloud')}>Cloud (account credits)</button></div>
-  {mode==='device'?<DeviceArtworkStudio key={contextKey} contextKey={contextKey} onPick={onPick} client={client} user={user} credits={credits} connected={connected} signedIn={signedIn} onSignIn={onSignIn} onRefresh={onRefresh}/>:<>
+  <div className="ai-title"><Sparkles size={17}/><b>Built-in AI Art Studio</b></div><p>Artwork is generated on your device. No paid AI API or cloud fallback is used.</p>
+  {cloudEnabled&&<div className="artwork-mode-picker" role="group" aria-label="Artwork generation mode"><button type="button" className="secondary" aria-pressed={mode==='device'} onClick={()=>setMode('device')}>On this device</button><button type="button" className="secondary" aria-pressed={mode==='cloud'} onClick={()=>setMode('cloud')}>Cloud (account credits)</button></div>}
+  {activeMode==='device'?<DeviceArtworkStudio key={contextKey} contextKey={contextKey} onPick={onPick} client={client} user={user} credits={credits} connected={connected} signedIn={signedIn} onSignIn={onSignIn} onRefresh={onRefresh}/>:<>
   <p>Describe your artwork, compare three choices, then apply your favorite directly to this card.</p>
   <label>Describe your artwork<textarea value={prompt} onChange={e=>onPrompt(e.target.value)} rows={4} maxLength={4000} placeholder="A moonlit elven ranger above an ancient forest, painterly fantasy illustration…"/></label>
   {!cloudEnabled?<p role="status">Cloud generation is currently unavailable. You can upload artwork or try On this device.</p>:!connected?<p role="status">Cloud artwork is being connected for this beta. You can still upload artwork to your card.</p>:!signedIn?<><p>Sign in to use your AI credits and keep your requests private.</p><button type="button" className="secondary" onClick={onSignIn}>Sign in for AI artwork</button></>:null}

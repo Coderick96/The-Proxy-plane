@@ -20,9 +20,10 @@ export async function deviceRequestFingerprint(prompt){
 const validReceipt=(receipt,job)=>receipt?.operationId===job.id&&receipt?.creditsSpent===1&&receipt?.mode==='device'&&receipt?.modelRevision===DEVICE_MODEL_REVISION;
 export default function DeviceArtworkStudio({onPick,contextKey='',client=null,user=null,credits=null,connected=Boolean(client),signedIn=Boolean(user),onSignIn,onRefresh,supportCheck=checkDeviceSupport,workerFactory=createDeviceWorker,clearCache=clearDeviceModelCache,request=api,fingerprint=deviceRequestFingerprint,authorizationTimeoutMs=20000}){
  const [prompt,setPrompt]=useState(''),[consent,setConsent]=useState(false),[support,setSupport]=useState(null),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[error,setError]=useState(''),[progress,setProgress]=useState(null),[images,setImages]=useState([]),[selected,setSelected]=useState(null),[billingState,setBillingState]=useState(null);
+ const selfCheckTimer=useRef(null);
  const task=useRef(0),worker=useRef(null),mounted=useRef(true),capability=useRef(0),billing=useRef(null);
  const accountReady=connected&&signedIn&&Boolean(client&&user?.id),creditReady=Number.isFinite(credits)&&credits>=1;
- const stop=()=>{task.current++;worker.current?.terminate();worker.current=null;};
+ const stop=()=>{clearTimeout(selfCheckTimer.current);task.current++;worker.current?.terminate();worker.current=null;};
  const currentJob=job=>mounted.current&&billing.current===job;
  const currentWorker=(job,instance)=>currentJob(job)&&worker.current===instance&&job.version===task.current;
  function updateBilling(job){if(currentJob(job))setBillingState({id:job.id,state:job.state});}
@@ -34,7 +35,7 @@ export default function DeviceArtworkStudio({onPick,contextKey='',client=null,us
   else if(job.state==='pending'||job.state==='unknown'){job.state='unknown';updateBilling(job);setError(message+' Credit authorization could not be confirmed. Retry authorization for request '+job.id+' before starting another request.');}
   else{billing.current=null;setBillingState(null);setError(message+' No credits were charged.');}
  }
- function cancel(){const job=billing.current;stop();setBusy(false);setProgress(null);if(!job)return;
+ function cancel(){const job=billing.current;stop();setBusy(false);setProgress(null);if(!job){setNotice('Device preparation canceled. No credits were charged.');return;}
   if(job.receipt){job.state='authorized';updateBilling(job);setNotice('Generation canceled after its 1-credit authorization. Retry this same request without another charge, or contact the owner with request '+job.id+'.');}
   else if(job.state==='pending'||job.state==='unknown'){updateBilling(job);setNotice('Generation canceled. Credit status is not yet confirmed; retry authorization for request '+job.id+'.');}
   else{billing.current=null;setBillingState(null);setNotice('Generation canceled before authorization. No AI credits were spent.');}
@@ -96,9 +97,23 @@ export default function DeviceArtworkStudio({onPick,contextKey='',client=null,us
  }
  function retry(){const job=billing.current;if(!job||!accountReady||job.owner!==user?.id)return;if(job.receipt&&!worker.current)startWorker(job);else authorize(job);}
  function dismiss(){const job=billing.current;if(!job?.receipt||job.promise)return;stop();billing.current=null;setBillingState(null);setBusy(false);setError('');setNotice('Request closed. Its 1-credit charge remains recorded. Contact the owner if it needs review.');}
+ async function selfCheck(){
+  if(busy||billing.current||!support?.supported)return;
+  stop();const version=task.current;setBusy(true);setError('');setNotice('Testing the built-in GPU runtime. No model files or credits are used.');
+  const finish=(message,failed=false)=>{if(!mounted.current||version!==task.current)return;stop();setBusy(false);setProgress(null);if(failed)setError(message+' No model was downloaded and no credits were charged.');else setNotice(message);};
+  try{const instance=workerFactory();worker.current=instance;const id=createUUID();
+   instance.onmessage=event=>{const value=event.data;if(!mounted.current||version!==task.current||worker.current!==instance||value?.id!==id)return;
+    if(value.type==='error')finish(value.message||'The GPU runtime test failed.',true);
+    if(value.type==='self-test-complete'){if(value.runtimeVerified!==true||value.modelDownloaded!==false||value.creditsSpent!==0)finish('The GPU test returned an invalid result.',true);else finish('GPU runtime self-check passed. Full image generation and quality still need testing on this device.');}
+   };
+   instance.onerror=()=>finish('The device could not initialize its GPU runtime.',true);
+   selfCheckTimer.current=setTimeout(()=>finish('The GPU runtime test timed out.',true),30000);
+   instance.postMessage({type:'self-test',id});
+  }catch(e){finish(e.message||'The GPU test could not start.',true);}
+ }
  async function removeModel(){if(busy)return;setError('');try{await clearCache();setNotice('Downloaded model removed. Your saved cards and artwork are unchanged.');}catch(e){setError(e.message||'The browser could not remove its model cache.');}}
  return <section className="device-art-studio" aria-label="On-device artwork generator">
-  <p>Generate inside this tab using your device’s GPU. Both device and cloud artwork cost 1 credit per three-choice request; an account is required.</p>
+  <p>Generate inside this tab using your device’s GPU, with no paid AI API. The beta uses 1 app credit per three-choice generation request; an account is required. The GPU self-check is free.</p>
   <p className="device-ai-model"><strong>{DEVICE_MODEL_NAME}</strong> · 512 × 512 artwork</p>
   {!connected?<p role="status">Account and credit setup is not connected for this beta yet. Generation stays disabled until server credit authorization is available.</p>:!signedIn?<><p>Sign in to use your AI credits for device generation.</p><button type="button" className="secondary" onClick={onSignIn}>Sign in for device artwork</button></>:<p>{Number.isFinite(credits)?credits+' AI credits available.':'Your credit balance is unavailable. Refresh it before generating.'}</p>}
   {connected&&signedIn&&onRefresh&&<button type="button" className="subtle-btn" disabled={busy} onClick={onRefresh}>Refresh AI credits</button>}
@@ -106,8 +121,9 @@ export default function DeviceArtworkStudio({onPick,contextKey='',client=null,us
   <p className="device-ai-download">First use downloads about 1.04 GB of model files. Use Wi-Fi; your browser may cache them if storage allows. Generation needs substantial GPU memory and can drain battery. Some phones and browsers cannot run this model.</p>
   <label className="device-ai-consent"><input type="checkbox" checked={consent} disabled={busy||Boolean(billingState)} onChange={e=>setConsent(e.target.checked)}/><span>I agree to the model download and its <a href={DEVICE_MODEL_LICENSE} target="_blank" rel="noreferrer">CreativeML OpenRAIL-M license and use restrictions</a>.</span></label>
   <p className="device-ai-support" role="status">{support?.message||'Checking this browser’s GPU features…'}</p>
+  <button type="button" className="secondary" disabled={busy||Boolean(billingState)||!support?.supported} onClick={selfCheck}>Run GPU self-check · no credits</button>
   <p className="muted">The server authorizes 1 credit after model setup, before generation. After authorization, cancellation or a device failure does not automatically refund it; retry the same request without another charge or contact the owner for review.</p>
-  <div className="device-ai-actions"><button type="button" className="primary" disabled={busy||Boolean(billingState)||!accountReady||!creditReady||!support?.supported||!consent||!prompt.trim()} onClick={generate}>{busy?'Generating on this device…':'Generate 3 choices on this device · 1 credit'}</button>{busy&&<button type="button" className="secondary" onClick={cancel}>Cancel generation</button>}</div>
+  <div className="device-ai-actions"><button type="button" className="primary" disabled={busy||Boolean(billingState)||!accountReady||!creditReady||!support?.supported||!consent||!prompt.trim()} onClick={generate}>{busy?(selfCheckTimer.current?'Testing GPU…':'Generating on this device…'):'Generate 3 choices on this device · 1 credit'}</button>{busy&&<button type="button" className="secondary" onClick={cancel}>Cancel generation</button>}</div>
   {billingState&&['pending','unknown','authorized'].includes(billingState.state)&&<div className="device-credit-recovery"><p>Request ID: <code>{billingState.id}</code></p><button type="button" className="secondary" disabled={!accountReady||billingState.state==='pending'||(billingState.state==='authorized'&&busy)} onClick={retry}>{billingState.state==='authorized'?'Retry this charged request':'Retry credit authorization'}</button>{billingState.state==='authorized'&&!busy&&<button type="button" className="subtle-btn" onClick={dismiss}>Close this charged request</button>}</div>}
   {support&&!support.supported&&!busy&&<button type="button" className="secondary" onClick={check}>Check device compatibility again</button>}
   <p className="device-ai-notice" role="status" aria-live="polite">{notice}</p>{progress&&<progress aria-label="Model loading progress" value={progress.value} max={progress.max}/>}

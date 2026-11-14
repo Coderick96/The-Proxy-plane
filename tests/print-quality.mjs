@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {sourceDpi,inspectPrintQuality} from '../src/printQuality.js';
+assert.equal(sourceDpi(750,1050,2.5,3.5),300);
+assert.equal(sourceDpi(512,512,2.5,3.5),146,'512 square full-art is below 300 PPI at trim size');
+assert.equal(sourceDpi(512,512,2.3,1.5),222,'Crop uses limiting dimension');
+assert.equal(sourceDpi(750,1050,5,7),150,'Zooming reduces source density');
+assert.equal(sourceDpi(0,512,2.5,3.5),null);
+const img={src:'data:image/png;base64,fixture',alt:'Low-resolution art',naturalWidth:512,naturalHeight:512,getBoundingClientRect:()=>({width:250,height:350})};
+const cell={querySelector:()=>({getBoundingClientRect:()=>({width:250,height:350}),querySelectorAll:()=>[img]})};
+assert.equal(inspectPrintQuality(cell)[0].dpi,146);
+img.src='data:image/svg+xml;base64,fixture';assert.deepEqual(inspectPrintQuality(cell),[],'Vector backs are resolution-independent');
+console.log('PASS actual-size source PPI: 300-PPI source, 512px crop/full-art limits, zoom degradation, invalid dimensions and vector exclusion.');

@@ -16,4 +16,4 @@ export async function checkAIRelease(env,fetcher=fetch){
   return body.status==='completed'&&text?{ok:true,imageModelReachable:true,textInferenceTested:true,imageGenerationTested:false}:{ok:false,stage:'inference',code:'INCOMPLETE_RESPONSE'};
  }catch{return {ok:false,code:'PROVIDER_TRANSPORT_ERROR'}}
 }
-if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)console.log('PROXY_PLANE_AI_RELEASE_CHECK '+JSON.stringify(await checkAIRelease(process.env)));
+if(process.env.AI_RELEASE_CHECK==='true'&&process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)console.log('PROXY_PLANE_AI_RELEASE_CHECK '+JSON.stringify(await checkAIRelease(process.env)));

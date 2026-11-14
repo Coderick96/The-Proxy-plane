@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "server": "node server/index.js",
-    "build": "vite build",
+    "build": "vite build && node scripts/ai-release-check.mjs",
     "preview": "vite preview",
     "test:community": "node tests/run-community.mjs",
     "test:backs": "node tests/card-backs.mjs",

@@ -16,7 +16,7 @@ try{
  assert.equal((await req('/api/billing/checkout',{product:'invented',price:'price_celestial'})).status,400);
  assert.equal((await req('/api/billing/checkout',{product:'pack_celestial',user_id:'attacker',price:'price_fake'})).status,200);const checkout=events.find(x=>x[0]==='checkout')[1];assert.equal(checkout.client_reference_id,uid);assert.equal(checkout.line_items[0].price,'price_celestial');
  assert.equal((await req('/api/premium/assets/celestial/astral')).status,403);
- assert.equal((await req('/api/billing/checkout',{product:'premium_monthly'})).status,200);billingInterval='week';assert.equal((await req('/api/billing/checkout',{product:'premium_monthly'})).status,503);billingInterval='month';assert.equal((await req('/api/billing/checkout',{product:'credits_100'})).status,400);
+ assert.equal((await req('/api/billing/checkout',{product:'premium_monthly'})).status,410);billingInterval='week';assert.equal((await req('/api/billing/checkout',{product:'premium_monthly'})).status,410);billingInterval='month';assert.equal((await req('/api/billing/checkout',{product:'credits_100'})).status,400);
  assert.equal((await req('/api/billing/webhook',{type:'checkout.session.completed'})).status,400);
  const webhook=async event=>{const payload=JSON.stringify({livemode:false,...event});const signature=sdk.webhooks.generateTestHeaderString({payload,secret:env.STRIPE_WEBHOOK_SECRET});return fetch(base+'/api/billing/webhook',{method:'POST',headers:{'Content-Type':'application/json','Stripe-Signature':signature},body:payload})};
  paid=false;await webhook({id:'evt_unpaid',type:'checkout.session.completed',data:{object:{id:'cs_paid'}}});assert(!events.some(x=>x[0]==='pp_apply_purchase'));

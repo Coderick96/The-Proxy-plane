@@ -21,11 +21,11 @@ for(const key of ['sk_live_fixture','rk_live_fixture',undefined,'sk_test_fixture
   rpc:async name=>{assert.equal(name,'pp_ai_reconcile');return 0},
   user:async()=>({id:uid,email:'fixture@example.test'}),access:async()=>({premium:false}),
   customer:async()=>{calls.push('customer');return 'cus_fixture'},
-  products:async()=>[{id:'premium_monthly',kind:'subscription',price:'price_fixture'}],
+  products:async()=>[{id:'credits_10',kind:'payment',price:'price_fixture'}],
   deckProducts:async()=>[{id:uid,published:true,title:'Fixture',stripe_price:'price_deck'}],
   webhook:async()=>calls.push('webhook'),
   stripe:{webhooks:sdk.webhooks,
-   prices:{retrieve:async id=>{calls.push('price');return {active:true,currency:'usd',unit_amount:1499,recurring:id==='price_fixture'?{interval:'month',interval_count:1}:undefined}}},
+   prices:{retrieve:async id=>{calls.push('price');return {active:true,currency:'usd',unit_amount:299,recurring:undefined}}},
    checkout:{sessions:{create:async()=>{calls.push('checkout');return {url:'https://checkout.stripe.com/test'}}}},
    billingPortal:{sessions:{create:async()=>{calls.push('portal');return {url:'https://billing.stripe.com/test'}}}}
   }
@@ -43,7 +43,7 @@ for(const key of ['sk_live_fixture','rk_live_fixture',undefined,'sk_test_fixture
  };
  try{
   const allowed=isTestStripeKey(key);
-  assert.equal((await req('/api/billing/checkout',{product:'premium_monthly'})).status,allowed?200:403);
+  assert.equal((await req('/api/billing/checkout',{product:'credits_10'})).status,allowed?200:403);
   assert.equal((await req('/api/billing/portal',{})).status,allowed?200:403);
   const catalog=await req('/api/premium/catalog');
   assert.equal(catalog.data.products[0].available,allowed);

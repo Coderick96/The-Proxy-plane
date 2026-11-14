@@ -33,9 +33,10 @@ try{
  assert(document.body.textContent.includes('existing subscriptions can still be managed'));
  assert(!document.body.textContent.includes('Live checkout — purchases charge real money.'),'Paused sales must not be advertised as active checkout');
  await act(async()=>{find('Check checkout availability').click();await tick()});
- assert(!find('Continue to checkout'),'Stale products are removed while retrying');
+ assert([...document.querySelectorAll('button')].filter(b=>b.textContent==='Continue to checkout').every(b=>b.disabled),'All shop offers stay disabled while retrying');
+ assert(!document.body.textContent.includes('$2.99'),'Stale prices are removed while retrying');
  await act(async()=>{pending.shift().resolve({products:[{...product,available:true,amount:299,currency:'usd'}],testMode:true,billing:{enabled:true,mode:'test',reason:null}});await tick()});
- assert(!find('Continue to checkout').disabled);
+ assert([...document.querySelectorAll('button')].some(b=>b.textContent==='Continue to checkout'&&!b.disabled));
  assert(!find('Manage billing').disabled);
  assert(document.body.textContent.includes('Stripe test mode'));
  assert(document.body.textContent.includes('$2.99'));

@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {checkAIRelease} from '../scripts/ai-release-check.mjs';
+let calls=0;
+assert.equal((await checkAIRelease({},()=>{calls++;})).code,'KEY_MISSING');assert.equal(calls,0);
+const env={OPENAI_API_KEY:'private-fixture-not-for-output'};
+const ok=await checkAIRelease(env,async(url,options)=>{calls++;if(url.includes('/models/'))return {ok:true};const body=JSON.parse(options.body);assert.equal(body.store,false);assert.equal(body.max_output_tokens,16);return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:'OK'}]}]})};});
+assert(ok.ok);assert.equal(ok.imageGenerationTested,false);assert.equal(calls,2);
+const failure=await checkAIRelease(env,async url=>url.includes('/models/')?{ok:true}:{ok:false,status:429,json:async()=>({error:{code:'insufficient_quota',message:env.OPENAI_API_KEY}})});
+assert.equal(failure.code,'INSUFFICIENT_API_QUOTA');assert(!JSON.stringify(failure).includes(env.OPENAI_API_KEY));
+console.log('PASS AI release probe: missing-key closure, nonbillable image-model lookup, one bounded text inference, quota classification and no key/provider content in result.');

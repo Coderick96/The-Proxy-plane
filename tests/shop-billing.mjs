@@ -3,7 +3,7 @@ import {createServices,catalog} from '../server/premium.js';
 import {createApp} from '../server/index.js';
 import {shopPlans} from '../server/shopPlans.js';
 const uid='00000000-0000-4000-8000-000000000001',calls=[];
-const env={STRIPE_SECRET_KEY:'sk_test_fixture',STRIPE_WEBHOOK_SECRET:'whsec_fixture',SHOP_MONTHLY_ENABLED:'true',STRIPE_PRICE_CREDITS_MONTHLY:'price_credits',SHOP_MONTHLY_CREDITS:'80',SHOP_CREDITS_MONTHLY_CENTS:'999',STRIPE_PRICE_STORAGE_MONTHLY:'price_storage',SHOP_STORAGE_CARDS:'2500',SHOP_STORAGE_BYTES:'2147483648',SHOP_STORAGE_MONTHLY_CENTS:'499',STRIPE_PRICE_PREMIUM_MONTHLY:'price_legacy'};
+const env={DEVICE_AI_PAID_RELEASE_VERIFIED:'true',STRIPE_SECRET_KEY:'sk_test_fixture',STRIPE_WEBHOOK_SECRET:'whsec_fixture',SHOP_MONTHLY_ENABLED:'true',STRIPE_PRICE_CREDITS_MONTHLY:'price_credits',SHOP_MONTHLY_CREDITS:'80',SHOP_CREDITS_MONTHLY_CENTS:'999',STRIPE_PRICE_STORAGE_MONTHLY:'price_storage',SHOP_STORAGE_CARDS:'2500',SHOP_STORAGE_BYTES:'2147483648',SHOP_STORAGE_MONTHLY_CENTS:'499',STRIPE_PRICE_PREMIUM_MONTHLY:'price_legacy'};
 let status='active',sku='credits_monthly',invoiceStatus='paid',reason='subscription_cycle',proration=false,quantity=1,interval='month';
 const plan=()=>shopPlans(env).find(p=>p.id===sku);
 const price=()=>({id:plan().price,active:true,currency:'usd',unit_amount:plan().expectedAmount,livemode:false,recurring:{interval,interval_count:1}});

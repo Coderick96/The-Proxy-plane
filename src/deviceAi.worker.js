@@ -7,10 +7,10 @@ let started=false,activeId=null,creditDecision=null;
 self.onmessage=async event=>{
  const job=event.data;
  if(started){if(job?.type==='credit-authorized'&&job.id===activeId&&creditDecision)creditDecision(job.receipt);return;}
- if(job?.type!=='generate')return;started=true;activeId=job.id;let engine,device;
+ if(!['generate','self-test'].includes(job?.type))return;started=true;activeId=job.id;let engine,device;
  const emit=(type,data)=>self.postMessage({type,id:job.id,...data});
  try{
-  if(typeof job.id!=='string'||typeof job.prompt!=='string'||!job.prompt.trim()||job.prompt.length>1000)throw new Error('Enter an artwork prompt of 1–1,000 characters.');
+  if(typeof job.id!=='string'||job.type==='generate'&&(typeof job.prompt!=='string'||!job.prompt.trim()||job.prompt.length>1000))throw new Error('Enter an artwork prompt of 1–1,000 characters.');
   const adapter=await self.navigator.gpu?.requestAdapter({powerPreference:'high-performance'});
   if(!adapter||!adapter.features.has('shader-f16')||adapter.limits.maxStorageBufferBindingSize<DEVICE_GPU_MIN_BUFFER||adapter.limits.maxBufferSize<DEVICE_GPU_MIN_BUFFER)throw new Error('A compatible GPU is unavailable in this browser worker. Upload artwork or try another device.');
   const ort=configureDeviceRuntime();
@@ -19,6 +19,7 @@ self.onmessage=async event=>{
   // Native ORT owns device creation. Validate its actual device, not a separately created adapter device.
   device=await ort.env.webgpu.device;
   if(!device?.features.has('shader-f16')||device.limits.maxStorageBufferBindingSize<DEVICE_GPU_MIN_BUFFER||device.limits.maxBufferSize<DEVICE_GPU_MIN_BUFFER)throw new Error('The GPU runtime cannot provide the features or memory limits this model needs.');
+  if(job.type==='self-test'){emit('self-test-complete',{runtimeVerified:true,modelDownloaded:false,creditsSpent:0});return;}
   device.lost.then(info=>{if(info.reason!=='destroyed')emit('error',{message:'The GPU became unavailable. Close other tabs and retry. '});});
   const progress=value=>emit('progress',value);
   const asset=id=>loadDeviceAsset(DEVICE_ASSETS.find(a=>a.id===id),{onProgress:progress});

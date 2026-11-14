@@ -5,7 +5,7 @@ async function run(){
  global.ImageData=class{constructor(data,width,height){Object.assign(this,{data,width,height})}};
  const getContext=window.HTMLCanvasElement.prototype.getContext,toDataURL=window.HTMLCanvasElement.prototype.toDataURL;
  window.HTMLCanvasElement.prototype.getContext=()=>({putImageData(){}});window.HTMLCanvasElement.prototype.toDataURL=()=> 'data:image/png;base64,AAAA';
- class FakeWorker{constructor(){this.terminated=0;this.messages=[];workers.push(this)}postMessage(message){this.messages.push(message);if(message.type==='generate')this.job=message}terminate(){this.terminated++}send(data){this.onmessage?.({data:{id:this.job.id,...data}})}}
+ class FakeWorker{constructor(){this.terminated=0;this.messages=[];workers.push(this)}postMessage(message){this.messages.push(message);if(['generate','self-test'].includes(message.type))this.job=message}terminate(){this.terminated++}send(data){this.onmessage?.({data:{id:this.job.id,...data}})}}
  const receipt=body=>({operationId:body.operationId,creditsSpent:1,mode:'device',modelRevision:DEVICE_MODEL_REVISION});
  const props={contextKey:'a:card',user:{id:'a'},client:{auth:{getSession:async()=>({data:{session:{user:{id:sessionUser},access_token:'token-'+sessionUser}}})}},connected:true,signedIn:true,credits:10,onRefresh:async()=>refreshed++,onSignIn:()=>{},supportCheck:async()=>({supported:true,message:'GPU features detected'}),workerFactory:()=>new FakeWorker(),clearCache:async()=>cleared++,fingerprint:async()=> 'a'.repeat(64),onPick:value=>picked.push(value),request:async(client,path,body)=>{
   const session=(await client.auth.getSession()).data.session;charges.push({path,body,session});
@@ -30,6 +30,8 @@ async function run(){
   await fresh({signedIn:false,user:null});assert(button(generateLabel).disabled);assert(button('Sign in for device artwork'));
   await fresh({credits:0});await input('A dragon');await act(async()=>document.querySelector('input[type=checkbox]').click());assert(button(generateLabel).disabled);
   await fresh({});await input('A dragon');assert(button(generateLabel).disabled,'no model download without consent');assert.equal(workers.length,0);
+  await click('Run GPU self-check · no credits');const selfTest=workers.at(-1);assert.equal(selfTest.job.type,'self-test');assert.equal(charges.length,0);assert(!('prompt' in selfTest.job));
+  await send(selfTest,{type:'self-test-complete',runtimeVerified:true,modelDownloaded:false,creditsSpent:0});assert(selfTest.terminated>0);assert.match(document.body.textContent,/Full image generation and quality still need testing/);assert.equal(charges.length,0);
   const first=await begin();assert.equal(first.job.type,'generate');assert.equal(charges.length,0,'model/runtime preparation does not debit');
   await send(first,{id:'wrong-job',type:'charge-required'});assert.equal(charges.length,0);
   await send(first,{type:'progress',loaded:1,total:2,message:'Reading model…'});assert.equal(document.querySelector('progress').value,1);

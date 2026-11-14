@@ -40,7 +40,7 @@ try{
  assert(!find('Manage billing').disabled);
  assert(document.body.textContent.includes('Stripe test mode'));
  assert(document.body.textContent.includes('$2.99'));
- assert(document.body.textContent.includes('Cloud AI may be paused'));
+ assert(document.body.textContent.includes('AI credit sales are paused'));
  await act(async()=>root.unmount());
  console.log('PASS checkout availability: loading defers checkout, catalog failure preserves portal access, retry clears stale offers, disabled reason is visible, paused live sales preserve cancellation portal, available test offer enables checkout; simulated DOM/provider responses.');
 }finally{global.fetch=previous;}

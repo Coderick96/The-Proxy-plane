@@ -33,3 +33,10 @@ window.runBlankBack=async()=>{
  const output=document.createElement('canvas');output.width=image.width;output.height=image.height;output.getContext('2d').drawImage(image,0,0);
  return {width:image.width,height:image.height,center:[...output.getContext('2d').getImageData(image.width/2,image.height/2,1,1).data],domCaptures};
 };
+
+window.checkLowResolution=async()=>{
+ const small=document.createElement('canvas');small.width=small.height=512;small.getContext('2d').fillStyle='#2266bb';small.getContext('2d').fillRect(0,0,512,512);const image=small.toDataURL();
+ root.render(<div className="print-canvas"><div className="print-sheets print-stage"><div className="preview-page" style={{width:300}}><PrintSheet sheet={sheets[0]} layout={layout} paperWidth={8.5} paperHeight={11} renderFront={()=><img src={image} alt="Low-resolution fixture"/>}/></div></div></div>);
+ await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+ const job=await capturePrintJob(document.querySelector('.print-sheets'),sheets,{...settings,dpi:600},rasterPrintCard);return job.qualityWarnings;
+};

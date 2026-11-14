@@ -14,3 +14,5 @@
 .print-size-lock{margin:0 18px 16px;padding:12px;border:1px solid #427f70;border-radius:8px;background:#142a25;color:#d4eee5;font-size:12px}.print-size-lock p{font-size:11px;line-height:1.6;margin:8px 0 0}@media print{.print-size-lock{display:none!important}}
 
 .print-ready-panel{padding:18px;margin-bottom:18px;border:1px solid #55a58c;background:#152d26;border-radius:10px}.print-ready-panel p{font-size:13px;line-height:1.5}.print-ready-panel a{text-decoration:none}@media print{.print-ready-panel{display:none!important}}
+
+.print-quality-note{overflow-wrap:anywhere}.print-quality-note ul{padding-left:20px;font-size:12px;line-height:1.6}

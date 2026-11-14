@@ -16,7 +16,7 @@ assert.equal(testBillingAllowed({STRIPE_SECRET_KEY:'rk_test_fixture',BETA_MODE:'
 
 for(const key of ['sk_live_fixture','rk_live_fixture',undefined,'sk_test_fixture','rk_test_fixture']){
  const calls=[];
- const env={OWNER_USER_ID:uid,STRIPE_SECRET_KEY:key,STRIPE_WEBHOOK_SECRET:secret};
+ const env={DEVICE_AI_PAID_RELEASE_VERIFIED:'true',OWNER_USER_ID:uid,STRIPE_SECRET_KEY:key,STRIPE_WEBHOOK_SECRET:secret};
  const services={configured:true,
   rpc:async name=>{assert.equal(name,'pp_ai_reconcile');return 0},
   user:async()=>({id:uid,email:'fixture@example.test'}),access:async()=>({premium:false}),

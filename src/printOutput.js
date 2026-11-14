@@ -1,3 +1,4 @@
+import {inspectPrintQuality} from './printQuality.js';
 import {CARD_WIDTH_IN,CARD_HEIGHT_IN} from './printSettings.js';
 import {backSlot} from './cardBacks.js';
 // One color capture and physical geometry for PDF and the isolated browser print job.
@@ -61,7 +62,7 @@ export async function capturePrintJob(root,pages,settings,capture) {
   const indices=settings.pageIndices||pages.map((_,i)=>i);
   if(!indices.length||indices.some(i=>!Number.isInteger(i)||i<0||i>=pages.length))throw new Error('Choose valid export pages.');
   const dpi=[300,600,1200].includes(settings.dpi)?settings.dpi:300;
-  const result=[],imageCache=new Map();let done=0;const total=indices.reduce((n,i)=>n+pages[i].cards.length,0);
+  const result=[],warnings=[],imageCache=new Map();let done=0;const total=indices.reduce((n,i)=>n+pages[i].cards.length,0);
   for(const i of indices) {
     settings.signal?.throwIfAborted();await waitForPrintAssets(sheets[i]);
     const geometry=printGeometry(settings,pages[i]),nodes=[...sheets[i].querySelectorAll('.print-cell')];
@@ -70,6 +71,7 @@ export async function capturePrintJob(root,pages,settings,capture) {
     for(const cell of geometry.cells){
       const node=nodes.find(n=>Number(n.dataset.slot)===cell.slot),rect=node?.getBoundingClientRect();
       if(!rect?.width||!rect.height) throw new Error('A print card has no visible size. Reopen Print and try again.');
+      warnings.push(...inspectPrintQuality(node).map(warning=>({...warning,page:i+1})));
       settings.signal?.throwIfAborted();
       // Pin the capture root: percentage sizing must not depend on the preview grid
       // after html-to-image moves the clone into its SVG foreignObject.
@@ -85,7 +87,7 @@ export async function capturePrintJob(root,pages,settings,capture) {
     }
     result.push({...geometry,cells});
   }
-  return {width:settings.width,height:settings.height,pages:result};
+  return {width:settings.width,height:settings.height,pages:result,qualityWarnings:warnings};
 }
 // Last guard at both output boundaries: paper size must never shrink card trim.
 export function validatePrintJob(job){

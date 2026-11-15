@@ -1,3 +1,5 @@
+import {capturePrintPDF} from '../src/printPDF.js';
+import {printMemoryLimits} from '../src/printMemory.js';
 import React from 'react';import {createRoot} from 'react-dom/client';import {toPng} from 'html-to-image';import {rasterPrintCard} from '../src/printRaster.js';import {capturePrintJob,addJobToPDF,printDocumentBlob} from '../src/printOutput.js';import {getLayout} from '../src/printSettings.js';import PrintSheet from '../src/PrintSheet.jsx';import CardRenderer from '../src/CardRenderer.jsx';import '../src/styles.css';import '../src/printWorkbench.css';import {jsPDF} from 'jspdf';
 const canvas=document.createElement('canvas');canvas.width=750;canvas.height=1050;let ctx=canvas.getContext('2d');ctx.fillStyle='#cb2942';ctx.fillRect(0,0,750,1050);ctx.fillStyle='#2266bb';ctx.fillRect(30,30,690,990);ctx.fillStyle='white';ctx.font='80px serif';ctx.fillText('PRINT TEST',100,400);const art=canvas.toDataURL();
 const layout=getLayout(8.5,11);const sheets=[{sheet:1,side:'front',cards:Array.from({length:9},(_,slot)=>({slot,card:{id:String(slot),image:art}}))}];
@@ -39,4 +41,19 @@ window.checkLowResolution=async()=>{
  root.render(<div className="print-canvas"><div className="print-sheets print-stage"><div className="preview-page" style={{width:300}}><PrintSheet sheet={sheets[0]} layout={layout} paperWidth={8.5} paperHeight={11} renderFront={()=><img src={image} alt="Low-resolution fixture"/>}/></div></div></div>);
  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
  const job=await capturePrintJob(document.querySelector('.print-sheets'),sheets,{...settings,dpi:600},rasterPrintCard);return job.qualityWarnings;
+};
+
+window.runHighDpiPDF=async(dpi=600)=>{
+ const limits=printMemoryLimits({navigator:{userAgent:'iPhone'}}),sizes=[];
+ if(dpi===600){
+  const cards=Array.from({length:9},(_,slot)=>{const c=document.createElement('canvas');c.width=750;c.height=1050;const ctx=c.getContext('2d');ctx.fillStyle='#2266bb';ctx.fillRect(0,0,750,1050);ctx.fillStyle='#fff';ctx.font='70px serif';ctx.fillText('CARD '+(slot+1),70,400);const image=c.toDataURL();c.width=c.height=1;return {slot,card:{id:String(slot),image}};});
+  const sheet={sheet:1,side:'front',cards};
+  root.render(<div className="print-canvas"><div className="print-sheets print-stage"><div className="preview-page" style={{width:300}}><PrintSheet sheet={sheet} layout={layout} paperWidth={8.5} paperHeight={11} renderFront={c=><img src={c.image}/>}/></div></div></div>);
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+ }
+
+ const {pdf}=await capturePrintPDF(document.querySelector('.print-sheets'),sheets,{...settings,dpi,memoryLimits:limits},async(node,options)=>{
+  const png=await rasterPrintCard(node,options);const image=new Image();image.src=png;await image.decode();sizes.push([image.width,image.height]);image.src='';return png;
+ });
+ window.highDpiPDF=pdf;return {pages:pdf.getNumberOfPages(),sizes,bytes:pdf.output('arraybuffer').byteLength,imageObjects:(pdf.output().match(/\/Subtype \/Image/g)||[]).length};
 };

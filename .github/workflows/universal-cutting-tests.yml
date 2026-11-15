@@ -1,0 +1,19 @@
+name: Universal Cutting Studio prototype tests
+on:
+  push:
+    branches: [feature/universal-cutting-studio]
+  pull_request:
+    paths:
+      - 'experimental/**'
+      - '.github/workflows/universal-cutting-tests.yml'
+  workflow_dispatch:
+jobs:
+  geometry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run cutting geometry tests
+        run: node --test experimental/universal-cutting.test.mjs

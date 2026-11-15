@@ -8,11 +8,14 @@ await server.listen();
 let browser;
 try{
  browser=await chromium.launch({executablePath:process.env.PRINT_BROWSER_EXECUTABLE||undefined,headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
- const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:3});
+ const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:3,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tests/print-browser.html`);
  await page.waitForFunction(()=>window.runNative&&document.querySelectorAll('.print-cell').length===9);
  const pixels=await page.evaluate(()=>window.runNative());assert.deepEqual(pixels,{width:750,height:1050,center:[34,102,187,255]});
+ const high=await page.evaluate(()=>window.runHighDpiPDF(600));assert.equal(high.pages,1);assert.equal(high.sizes.length,9);assert(high.imageObjects>=9,'Nine distinct cards must be embedded, not just one deduplicated image');assert(high.sizes.every(size=>size[0]===1500&&size[1]===2100));
+ const rejected=await page.evaluate(async()=>{try{await window.runHighDpiPDF(1200);return null}catch(error){return error.message}});assert.match(rejected,/Choose 600 or 300/);console.log('600-DPI PDF: nine true 1500x2100 lossless cards; unsafe iPhone 1200-DPI request rejected without reload.',JSON.stringify(high));
+ const highPDF=await page.evaluate(()=>window.highDpiPDF.output('datauristring'));await mkdir('/tmp/proxy-print-qa',{recursive:true});await writeFile('/tmp/proxy-print-qa/high-dpi.pdf',Buffer.from(highPDF.split(',')[1],'base64'));
  const pdf=await page.evaluate(()=>window.makePDF());await mkdir('/tmp/proxy-print-qa',{recursive:true});await writeFile('/tmp/proxy-print-qa/imports.pdf',Buffer.from(pdf.split(',')[1],'base64'));
  const url=await page.evaluate(()=>window.makePrintURL());await page.goto(url);
  assert.equal(await page.locator('.sheet > img').count(),9);assert.equal(await page.locator('button').innerText(),'Print sheets');
@@ -26,6 +29,12 @@ try{
  await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/`);
  await page.getByRole('button',{name:'Open navigation menu'}).click();
  await page.locator('.main-nav button').filter({hasText:'Print'}).click();
+ const saved=await page.evaluate(()=>Object.fromEntries(Object.keys(localStorage).filter(k=>/projects|print-queue/.test(k)).map(k=>[k,localStorage.getItem(k)])));
+ let mainNavigations=0;page.on('framenavigated',frame=>{if(frame===page.mainFrame())mainNavigations++;});
+ await page.getByLabel('Export quality').selectOption('1200');await page.getByRole('button',{name:'Export PDF',exact:true}).click();
+ await page.getByText(/1200 DPI needs too much memory/).waitFor();assert.equal(mainNavigations,0);
+ assert.deepEqual(await page.evaluate(()=>Object.fromEntries(Object.keys(localStorage).filter(k=>/projects|print-queue/.test(k)).map(k=>[k,localStorage.getItem(k)]))),saved,'Unsafe export cannot reset stored cards or queue');
+ await page.getByLabel('Export quality').selectOption('600');
  await page.getByRole('button',{name:'Direct print',exact:true}).click();
  await page.getByRole('link',{name:'Open print sheets',exact:true}).waitFor();
  const popupEvent=page.waitForEvent('popup');await page.getByRole('link',{name:'Open print sheets',exact:true}).click();const popup=await popupEvent;

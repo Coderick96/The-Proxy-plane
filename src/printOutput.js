@@ -1,3 +1,4 @@
+import {checkPrintRasterBudget} from './printMemory.js';
 import {inspectPrintQuality} from './printQuality.js';
 import {CARD_WIDTH_IN,CARD_HEIGHT_IN} from './printSettings.js';
 import {backSlot} from './cardBacks.js';
@@ -57,6 +58,7 @@ async function embedPrintImages(node,cache) {
 }
 export async function capturePrintJob(root,pages,settings,capture) {
   if(!root) throw new Error('Open the print page before exporting.');
+  checkPrintRasterBudget(settings,settings.memoryLimits);
   const sheets=[...root.querySelectorAll('.paper')];
   if(!pages.length||sheets.length!==pages.length) throw new Error('The print preview changed. Try again.');
   const indices=settings.pageIndices||pages.map((_,i)=>i);
@@ -68,6 +70,7 @@ export async function capturePrintJob(root,pages,settings,capture) {
     const geometry=printGeometry(settings,pages[i]),nodes=[...sheets[i].querySelectorAll('.print-cell')];
     if(nodes.length!==geometry.cells.length) throw new Error('The print preview changed. Try again.');
     const cells=[];
+    await settings.onPageStart?.(geometry);
     for(const cell of geometry.cells){
       const node=nodes.find(n=>Number(n.dataset.slot)===cell.slot),rect=node?.getBoundingClientRect();
       if(!rect?.width||!rect.height) throw new Error('A print card has no visible size. Reopen Print and try again.');
@@ -82,9 +85,16 @@ export async function capturePrintJob(root,pages,settings,capture) {
         style:{width:`${rect.width}px`,height:`${rect.height}px`,margin:'0',transform:'none',gridColumn:'auto',gridRow:'auto'},
         filter:n=>!n.classList?.contains('crop')&&!n.hasAttribute?.('data-print-control')});}finally{restore();}
       if(!/^data:image\/png;base64,[a-z\d+/=]+$/i.test(image)) throw new Error('A card could not be rendered for printing.');
-      settings.signal?.throwIfAborted();cells.push({...cell,image});
+      settings.signal?.throwIfAborted();
+      if(settings.imageSink){
+        await settings.imageSink({...cell,image},geometry);
+        cells.push({...cell});image=null;imageCache.clear();
+        // Let mobile browsers release canvas/decode resources and paint Cancel.
+        await new Promise(resolve=>setTimeout(resolve,0));
+      }else cells.push({...cell,image});
       settings.onProgress?.({done:++done,total,page:i+1});
     }
+    await settings.onPageEnd?.(geometry);
     result.push({...geometry,cells});
   }
   return {width:settings.width,height:settings.height,pages:result,qualityWarnings:warnings};
@@ -118,7 +128,7 @@ export function addJobToPDF(pdf,job) {
   pdf.viewerPreferences?.({PrintScaling:'None',PickTrayByPDFSize:true});
   job.pages.forEach((page,i)=>{
     if(i)pdf.addPage();
-    for(const cell of page.cells)pdf.addImage(cell.image,'PNG',cell.x,cell.y,cell.width,cell.height);
+    for(const cell of page.cells)pdf.addImage(cell.image,'PNG',cell.x,cell.y,cell.width,cell.height,undefined,'FAST');
     const color=page.guideColor||'#464646';pdf.setDrawColor(color);pdf.setLineWidth(.005);
     for(const l of page.lines)pdf.line(...l);
     for(const c of page.circles)pdf.circle(...c);

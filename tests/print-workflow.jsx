@@ -1,0 +1,24 @@
+import React,{act} from 'react';import {createRoot} from 'react-dom/client';import assert from 'node:assert/strict';
+import App from '../src/App.jsx';import PrintingPicker from '../src/PrintingPicker.jsx';import {rememberPrint,replacePrinting} from '../src/printHistory.js';
+async function run(){
+ const old={id:'copy-a',kind:'original',name:'Old art',image:'old.png',back:{mode:'standard'},source:{oracle_id:'oracle-a',name:'Card A'}};
+ const next={id:'printing-b',name:'Card A',set_name:'New Set',collector_number:'42',image_uris:{large:'new.png'}};
+ const queue=replacePrinting([old,{...old,id:'copy-b'}],'copy-a',next);assert.equal(queue[0].id,'copy-a');assert.equal(queue[0].image,'new.png');assert.deepEqual(queue[0].back,old.back);assert.equal(queue[1].image,'old.png');assert.equal(old.image,'old.png');assert.throws(()=>replacePrinting([old],old.id,{name:'No image'}),/no printable image/);
+ let history=[];for(let i=0;i<4;i++)history=rememberPrint(history,[old],{dpi:600},{id:String(i),createdAt:'2026-11-15T12:00:00Z'});assert.deepEqual(history.map(h=>h.id),['3','2','1']);old.name='Later edit';assert.equal(history[0].cards[0].name,'Old art');assert.equal(rememberPrint(history,[],{}),history);
+ const root=createRoot(document.getElementById('root'));let chosen;
+ global.fetch=async()=>({ok:true,json:async()=>({data:[next],has_more:false})});
+ await act(async()=>root.render(<PrintingPicker card={old} onClose={()=>{}} onChoose={(...args)=>{chosen=args}}/>));assert(document.querySelector('[role="dialog"]'));await act(async()=>document.querySelector('.printing-option').click());assert.equal(chosen[0].id,'printing-b');
+ let resolve;global.fetch=()=>new Promise(r=>{resolve=r});await act(async()=>root.render(<PrintingPicker key="stale" card={old} onClose={()=>{}} onChoose={()=>{throw Error('stale choice')}}/>));await act(async()=>root.render(<span>Closed</span>));await act(async()=>resolve({ok:true,json:async()=>({data:[next]})}));assert.equal(document.body.textContent,'Closed');
+ const settings={paperId:'letter',orientation:'portrait',customWidth:8.5,customHeight:11,margin:.25,gap:0,dpi:600,guideStyle:'corners',guideSides:'both',guideColor:'#464646',guides:true,sheetBack:{mode:'none'},printOutput:'fronts',duplexFlip:'long',bleed:0,registration:false,backX:0,backY:0,calibrationX:0,calibrationY:0,mediaId:'plain'};
+ const entry=(id,name)=>({id,createdAt:'2026-11-15T12:00:00Z',cards:[{...old,id:'restored',name}],settings});
+ const store=new Map([['account:a:printHistory',[entry('a-print','A private print')]],['account:b:printHistory',[entry('b-print','B private print')]]]);global.localStorage=window.localStorage;
+ global.indexedDB={open(){const request={};const db={transaction(){const tx={objectStore(){return {get(key){const req={};queueMicrotask(()=>{req.result=store.get(key);req.onsuccess?.()});return req},put(value,key){store.set(key,structuredClone(value));queueMicrotask(()=>tx.oncomplete?.())}}}};return tx}};queueMicrotask(()=>{request.result=db;request.onsuccess?.()});return request}};
+ let authCallback;const backend={auth:{getSession:async()=>({data:{session:{user:{id:'a'}}}}),onAuthStateChange(cb){authCallback=cb;return {data:{subscription:{unsubscribe(){}}}};}}};global.fetch=async()=>({ok:false,json:async()=>({error:'Not configured'})});
+ await act(async()=>root.render(<App backend={backend}/>));const navigate=async text=>{await act(async()=>[...document.querySelectorAll('.main-nav button')].find(b=>b.textContent.includes(text)).click());};
+ await navigate('My Vault');assert(document.body.textContent.includes('A private print'));assert(!document.body.textContent.includes('B private print'));
+ await act(async()=>[...document.querySelectorAll('button')].find(b=>b.textContent==='Restore to print sheet').click());assert.equal(document.querySelector('.queue-item-info b').textContent,'A private print');assert.equal(document.querySelector('select:has(option[value="1200"])').value,'600');
+ await act(async()=>authCallback('SIGNED_IN',{user:{id:'b'}}));await navigate('My Vault');assert(document.body.textContent.includes('B private print'));assert(!document.body.textContent.includes('A private print'));
+ await act(async()=>[...document.querySelectorAll('button')].find(b=>b.textContent==='Delete print history').click());assert.equal(store.get('account:b:printHistory').length,0);assert.equal(store.get('account:a:printHistory').length,1);
+ await act(async()=>authCallback('SIGNED_OUT',null));await navigate('My Vault');assert(!document.body.textContent.includes('A private print'));assert(!document.body.textContent.includes('B private print'));await act(async()=>root.unmount());
+ console.log('PASS printing workflow: in-place per-copy replacement preserves order/back, canceled picker is isolated, three-job retention snapshots, vault restore/settings, account isolation and deletion.');
+}run().catch(e=>{console.error(e);process.exitCode=1});

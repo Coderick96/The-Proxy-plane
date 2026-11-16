@@ -25,14 +25,20 @@ try{
  assert.equal(await page.evaluate(()=>window.runFallback()),9);
  const customPDF=await page.evaluate(()=>window.makePDF());await writeFile('/tmp/proxy-print-qa/custom-fallback.pdf',Buffer.from(customPDF.split(',')[1],'base64'));
  // Exercise the app buttons with a queued image, without signing into an account.
- await page.evaluate(()=>localStorage.setItem('pk-print-queue',JSON.stringify([{id:'test-copy',kind:'original',name:'Browser QA',image:window.job.pages[0].cells[0].image}])));
+ await page.evaluate(()=>localStorage.setItem('pk-print-queue',JSON.stringify([{id:'test-copy',kind:'original',name:'Browser QA',source:{oracle_id:'qa-oracle',name:'Browser QA'},back:{mode:'none'},image:window.job.pages[0].cells[0].image}])));
  await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/`);
  await page.getByRole('button',{name:'Open navigation menu'}).click();
  await page.locator('.main-nav button').filter({hasText:'Print'}).click();
+ const replacement=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=750;c.height=1050;const ctx=c.getContext('2d');ctx.fillStyle='#a030c0';ctx.fillRect(0,0,750,1050);return c.toDataURL('image/png');});
+ await page.route('https://api.scryfall.com/cards/search?**',route=>route.fulfill({json:{data:[{id:'new-art',oracle_id:'qa-oracle',name:'Browser QA',set_name:'Alternate artwork',collector_number:'2',image_uris:{large:replacement}}],has_more:false}}));
+ await page.getByRole('button',{name:'Change printing for Browser QA',exact:true}).click();await page.getByRole('dialog').waitFor();await page.locator('.printing-option').click();await page.getByRole('dialog').waitFor({state:'detached'});
+ assert.equal(await page.locator('.print-queue .queue-item').count(),1);assert.match(await page.locator('.queue-item-info').innerText(),/Alternate artwork/);
+ const history=()=>page.evaluate(()=>new Promise((resolve,reject)=>{const r=indexedDB.open('proxy-kingdom-db',1);r.onsuccess=()=>{const db=r.result,g=db.transaction('state').objectStore('state').get('printHistory');g.onsuccess=()=>{resolve(g.result||[]);db.close()};g.onerror=()=>reject(g.error)};}));
  const saved=await page.evaluate(()=>Object.fromEntries(Object.keys(localStorage).filter(k=>/projects|print-queue/.test(k)).map(k=>[k,localStorage.getItem(k)])));
  let mainNavigations=0;page.on('framenavigated',frame=>{if(frame===page.mainFrame())mainNavigations++;});
  await page.getByLabel('Export quality').selectOption('1200');await page.getByRole('button',{name:'Export PDF',exact:true}).click();
  await page.getByText(/1200 DPI needs too much memory/).waitFor();assert.equal(mainNavigations,0);
+ assert.equal((await history()).length,0,'Failed export must not enter recent prints');
  assert.deepEqual(await page.evaluate(()=>Object.fromEntries(Object.keys(localStorage).filter(k=>/projects|print-queue/.test(k)).map(k=>[k,localStorage.getItem(k)]))),saved,'Unsafe export cannot reset stored cards or queue');
  await page.getByLabel('Export quality').selectOption('600');
  await page.getByRole('button',{name:'Direct print',exact:true}).click();
@@ -40,6 +46,11 @@ try{
  const popupEvent=page.waitForEvent('popup');await page.getByRole('link',{name:'Open print sheets',exact:true}).click();const popup=await popupEvent;
  const type=await page.evaluate(async()=>{const r=await fetch(document.querySelector('.print-ready-panel a').href);const blob=await r.blob();return {type:blob.type,header:await blob.slice(0,5).text()};});assert.deepEqual(type,{type:'application/pdf',header:'%PDF-'});await popup.close();
  const downloadEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Export PDF',exact:true}).click();const download=await downloadEvent;assert.equal(download.suggestedFilename(),'the-proxy-plane-sheets.pdf');
+ await page.waitForTimeout(150);const firstHistory=await history();assert.equal(firstHistory.length,2);
+ for(let i=0;i<2;i++){const event=page.waitForEvent('download');await page.getByRole('button',{name:'Export PDF',exact:true}).click();await event;}
+ await page.waitForTimeout(150);const recent=await history();assert.equal(recent.length,3);assert(!recent.some(h=>h.id===firstHistory.at(-1).id));assert.equal(recent[0].cards[0].source.id,'new-art');assert.deepEqual(recent[0].cards[0].back,{mode:'none'});
+ await page.reload();await page.getByRole('button',{name:'Open navigation menu'}).click();await page.locator('.main-nav button').filter({hasText:'My Vault'}).click();assert.equal(await page.getByRole('button',{name:'Restore to print sheet',exact:true}).count(),3);await page.getByRole('button',{name:'Restore to print sheet',exact:true}).first().click();assert.equal(await page.locator('.queue-item').count(),1);assert.match(await page.locator('.queue-item-info').innerText(),/Alternate artwork/);
+ console.log('Mobile browser workflow: in-sheet printing replacement, failed-export exclusion, four successful jobs retain three, persistent vault history and restore.');
  assert.deepEqual(errors,[]);
  console.log('Browser pixels verified at 390px viewport: 9 imported cards at 750×1050, populated print document and clickable print button, custom-card fallback with 9 rendered cards. PDFs saved for rendered-page inspection.');
 }finally{await browser?.close();await server.close();}

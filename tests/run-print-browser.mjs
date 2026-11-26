@@ -1,6 +1,7 @@
+import {unzipSync,strFromU8} from 'fflate';
 import {createRequire} from 'node:module';
 import {createServer} from 'vite';
-import {writeFile,mkdir} from 'node:fs/promises';
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const {chromium}=createRequire(import.meta.url)('playwright');
 const server=await createServer({root:new URL('../',import.meta.url).pathname,server:{port:0,host:'127.0.0.1'}});
@@ -51,6 +52,11 @@ try{
  await page.waitForTimeout(150);const recent=await history();assert.equal(recent.length,3);assert(!recent.some(h=>h.id===firstHistory.at(-1).id));assert.equal(recent[0].cards[0].source.id,'new-art');assert.deepEqual(recent[0].cards[0].back,{mode:'none'});
  await page.reload();await page.getByRole('button',{name:'Open navigation menu'}).click();await page.locator('.main-nav button').filter({hasText:'My Vault'}).click();assert.equal(await page.getByRole('button',{name:'Restore to print sheet',exact:true}).count(),3);await page.getByRole('button',{name:'Restore to print sheet',exact:true}).first().click();assert.equal(await page.locator('.queue-item').count(),1);assert.match(await page.locator('.queue-item-info').innerText(),/Alternate artwork/);
  console.log('Mobile browser workflow: in-sheet printing replacement, failed-export exclusion, four successful jobs retain three, persistent vault history and restore.');
+ const svgEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Export SVG',exact:true}).click();const svgDownload=await svgEvent;assert.equal(svgDownload.suggestedFilename(),'the-proxy-plane-page-1-front.svg');const svgText=await readFile(await svgDownload.path(),'utf8');
+ const svgPixels=await page.evaluate(async text=>{const doc=new DOMParser().parseFromString(text,'image/svg+xml');if(doc.querySelector('parsererror'))throw Error('Invalid SVG');const card=doc.querySelector('image');const img=new Image();const url=URL.createObjectURL(new Blob([text],{type:'image/svg+xml'}));try{img.src=url;await img.decode();const canvas=document.createElement('canvas');canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0);const x=(Number(card.getAttribute('x'))+Number(card.getAttribute('width'))/2)*96,y=(Number(card.getAttribute('y'))+Number(card.getAttribute('height'))/2)*96;return {width:canvas.width,height:canvas.height,pixel:[...ctx.getImageData(x,y,1,1).data],vectors:doc.querySelectorAll('line').length};}finally{URL.revokeObjectURL(url);img.src='';}},svgText);assert.deepEqual(svgPixels.pixel,[160,48,192,255]);assert.equal(svgPixels.width,816);assert.equal(svgPixels.height,1056);assert(svgPixels.vectors>0);
+ await page.getByText('02 · Card backs & duplex',{exact:true}).click();await page.getByLabel('Pages to print').selectOption('both');const zipEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Export SVG',exact:true}).click();const zipDownload=await zipEvent;assert.equal(zipDownload.suggestedFilename(),'the-proxy-plane-svg-sheets.zip');const zipFiles=unzipSync(await readFile(await zipDownload.path()));assert.deepEqual(Object.keys(zipFiles),['the-proxy-plane-page-1-front.svg','the-proxy-plane-page-2-back.svg']);assert.match(strFromU8(zipFiles['the-proxy-plane-page-2-back.svg']),/image\/png;base64/);
+ await page.getByLabel('Export page range').fill('2');const rangeEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Export SVG',exact:true}).click();assert.equal((await rangeEvent).suggestedFilename(),'the-proxy-plane-page-2-back.svg');
+ console.log('Mobile SVG download: standalone exact-size sheet renders correct pixels and vector guides; duplex ZIP contains named front/back sheets; selected backing page downloads alone.');
  assert.deepEqual(errors,[]);
  console.log('Browser pixels verified at 390px viewport: 9 imported cards at 750×1050, populated print document and clickable print button, custom-card fallback with 9 rendered cards. PDFs saved for rendered-page inspection.');
 }finally{await browser?.close();await server.close();}

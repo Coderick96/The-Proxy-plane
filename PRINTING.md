@@ -99,3 +99,9 @@ or Other / my own preference. Selecting a tool retains your chosen gap; use
 always lets you set your own value, in 0.1 mm steps up to 12.7 mm. Studio profiles
 retain both the gap and cutting-tool choice. Cutter suggestions do not control
 hardware or guarantee that a particular die fits.
+
+## SVG sheets
+
+Use **Print → Export SVG** to export the selected pages with the same paper dimensions, card size, bleed, backing alignment, and crop/registration marks as the preview. One page downloads as a standalone `.svg`; multiple pages download as a ZIP containing one named SVG per front/back page. Extract the ZIP before opening the sheets in an SVG editor or print tool.
+
+Card images are embedded as lossless PNGs at the selected export DPI, so the SVG needs no external images or fonts. Cut guides remain vector paths. Exporting SVG does not trace artwork into editable vector shapes. Print at Actual size / 100% with matching paper. The existing mobile DPI and export-size guards also apply; for large jobs, select a smaller page range. Successful SVG exports also appear in the vault's temporary recent-print history.
